@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!--
+/* Example
+Ratchet & Clank - 1/4 
+   Clank (RC) | Fav Robots
+Re:Zero kara Hajimeru Isekai Seikatsu - 2/48 
+Rem (RZ)
+   Ram | Meh
+
+Saenai Heroine no Sodatekata - 1/10 
+   Utaha Kasumigaoka
+*/
+-->
+
+<meta charset="utf-8"/>
+<!-- Libraries -->
+<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular.js"></script>
+
+<!-- App -->
+<script src="Apps/mudaeRanker.js"></script>
+
+<!-- Controller -->
+<script src="Controllers/mudaeRankerController.js"></script>
+
+<!-- Services -->
+<script src="Services/characterService.js"></script>
+<script src="Services/utilityService.js"></script>
+<script src="Services/preferenceListService.js"></script>
+
+<!-- Directives -->
+<script src="Directives/mudrBody.js"></script>
+<script src="Directives/mudrCardClick.js"></script>
+<script src="Directives/mudrCardClose.js"></script>
+<script src="Directives/mudrExportClean.js"></script>
+<script src="Directives/mudrExportJson.js"></script>
+<script src="Directives/mudrExportSort.js"></script>
+<script src="Directives/mudrNewCharacterCard.js"></script>
+<script src="Directives/mudrNewThumb.js"></script>
+<script src="Directives/mudrParseInput.js"></script>
+<script src="Directives/mudrSkipInput.js"></script>
+<script src="Directives/mudrToggleMode.js"></script>
+<script src="Directives/mudrUrlInput.js"></script>
+
+<!-- Styles -->
+<link rel="stylesheet" type="text/css" href="Styles/mudaeRankerStyles.css">
+</head>
+<body data-ng-app="mudaeRanker" data-ng-controller="mudaeRankerController" data-ng-attr-class="{{ getModeClassName() }}" data-mudr-body>
+<div style="font-weight:bold; color:rgb(255,0,0); font-size:2em; text-align:center;">Skipping currently does not work.</div>
+<textarea id="DiscordDump" class="InputField" placeholder="Paste a previous export or results from $mmas here" ></textarea>
+<textarea id="JSONExport" class="OutputField" placeholder="Exported results will show up here" ></textarea>
+<br />
+<button data-mudr-parse-input>Parse Input</button>
+<button data-mudr-export-json>Export All Characters</button>
+<button data-mudr-export-sort>Generate Sort Commands</button>
+<button data-mudr-export-clean>Clean Export</button>
+<button data-mudr-toggle-mode>{{ getNextModeName() }}</button>
+<br />
+<br />
+
+<div class="CharacterCardContainer">
+	<div class="CharacterThumb" data-mudr-new-thumb>
+		<div class="CharacterNew">&#127381;</div>
+	</div>
+
+	<div data-ng-repeat="c in characters" data-ng-attr-class="{{ c.className }}" data-ng-attr-title="{{ c.series + ': ' + c.name}}" data-mudr-card-click data-character-index="{{ $index }}">
+		<div class="CharacterName">
+			<span class="CharacterNameText">{{ c.name }}</span><span class="CharacterClose" title="Close Card" data-mudr-card-close>&#10062;</span>
+		</div>
+		<div class="CharacterSeries">{{ c.series }}</div>
+		<img data-ng-src="{{ c.imageUrl }}" />
+		<div class="CharacterURL">
+			<label>URL: <input type="text" value="{{ c.imageUrl }}" data-mudr-url-input /></label>
+		</div>
+		<div class="CharacterSkip">
+			<label data-mudr-skip-input><input type="checkbox" data-ng-model="c.skip" />Skip?</label>
+		</div>
+	</div>
+
+	<div id="NewCharacterCard" class="CharacterThumb CharacterFull NewCharacterCard" style="display:none" data-mudr-new-character-card>
+		<div class="CharacterName">
+			<input id="NewCharacterName" type="text" class="CharacterNameText" placeholder="Character Name" /><span id="NewCharacterCancel" class="CharacterClose" title="Close Card">&#10062;</span>
+		</div>
+		<div class="CharacterSeries"><input id="NewCharacterSeries" type="text" placeholder="Series" /></div>
+		<img />
+		<div class="CharacterURL">
+			<label>URL: <input id="NewCharacterUrl" type="text" value="" /></label>
+		</div>
+		<div class="CharacterSkip">
+			<label><input id="NewCharacterSkip" type="checkbox" />Skip?</label><span id="NewCharacterAdd" class="CharacterClose" title="Add Character">&#9989;</span>
+		</div>
+	</div>
+</div>
+<div id="RankingContainer" class="RankingContainer">
+	<div class="RankingContainerTitle">Which one is better?</div>
+	<div id="RankingCardContainer" class="RankingCardContainer">
+	</div>
+</div>
+<!--<img src="data:image/png;base64,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" alt="Sorry" />-->
+<!--<img src="" />-->
+<!--
+<div class="CharacterThumb">
+	<div class="CharacterName">Raphtalia</div>
+	<div class="CharacterSeries">Rising of the Shield Hero</div>
+	<img src="https://s4.anilist.co/file/anilistcdn/character/large/n88889-EErslFOXTMgj.jpg" />
+	<div class="CharacterURL">
+		<label>URL: <input type="text" value="https://s4.anilist.co/file/anilistcdn/character/large/n88889-EErslFOXTMgj.jpg" /></label>
+	</div>
+	<div class="CharacterSkip">
+		<label><input type="checkbox" />Skip?</label>
+	</div>
+</div>
+<br />
+<br />
+<div class="CharacterThumb CharacterFull">
+	<div class="CharacterName">Raphtalia</div>
+	<div class="CharacterSeries">Rising of the Shield Hero</div>
+	<img src="https://s4.anilist.co/file/anilistcdn/character/large/n88889-EErslFOXTMgj.jpg" />
+	<div class="CharacterURL">
+		<label>URL: <input type="text" value="https://s4.anilist.co/file/anilistcdn/character/large/n88889-EErslFOXTMgj.jpg" /></label>
+	</div>
+	<div class="CharacterSkip">
+		<label><input type="checkbox" />Skip?</label>
+	</div>
+</div>-->
+	<!--<div id="blockingDiv" style="position:fixed; left:0; right:0; top:0; bottom:0; background-color:rgb(0,0,0,.5); z-index:-1; display:none;"></div>-->
+</body>
+</html>

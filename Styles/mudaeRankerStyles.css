@@ -1,0 +1,194 @@
+body
+{
+	font-family: Calibri, Helvetica, Arial;
+}
+
+.InputField, .OutputField
+{
+	resize: none;
+	width: 45%;
+	height: 10em;
+}
+
+.CharacterThumb
+{
+	background-color: rgb(255,255,255);
+	border-color: rgb(20,20,20);
+	border-radius: 6px;
+	border-style: solid;
+	border-width: 1px;
+	box-shadow: 2px 2px 3px rgb(90,90,90);
+	box-sizing: border-box;
+	width: 5%;
+	padding: 3px;
+	/*display: inline-block;*/ /*Now using flex*/
+	display: flex;
+	margin: 3px;
+	cursor: pointer;
+}
+
+.CharacterThumb .CharacterName
+{
+	display: none;
+	font-size: 80%;
+	font-weight: bold;
+	overflow: hidden;
+}
+
+.CharacterThumb .CharacterSeries
+{
+	display: none;
+	font-size: 100%;
+	overflow: hidden;
+}
+
+.CharacterThumb.CharacterMissingImage .CharacterName, .CharacterThumb.CharacterMissingImage .CharacterSeries
+{
+	display: block;
+}
+
+.CharacterThumb img
+{
+	width: 100%;
+	height: 100%;
+	border-radius: 6px;
+}
+
+.CharacterThumb .CharacterURL
+{
+	display: none;
+}
+
+.CharacterThumb .CharacterSkip
+{
+	display: none;
+	margin: 3px 0;
+}
+
+.CharacterThumb.CharacterMissingImage img
+{
+	display: none;
+}
+
+.CharacterThumb.CharacterFull
+{
+	display: inline-block;
+	width: auto;
+	max-width: 30%;
+	padding: 4px;
+	cursor: auto;
+}
+
+.CharacterThumb.CharacterFull .CharacterName
+{
+	display: block;
+	font-size: 100%;
+	font-weight: bold;
+	margin: 2px 0;
+	padding: 2px;
+}
+
+.CharacterNameText
+{
+	float: left;
+}
+
+.CharacterClose
+{
+	cursor: pointer;
+	float: right;
+}
+
+.CharacterThumb.CharacterFull .CharacterSeries
+{
+	display: block;
+	font-size: 100%;
+	margin: 2px 0;
+}
+
+.CharacterThumb.CharacterFull img
+{
+	display: block;
+	height: auto;
+	/*margin: 5px;
+	width: auto;*/
+}
+
+.CharacterThumb.CharacterFull .CharacterURL, .CharacterThumb.CharacterFull .CharacterSkip
+{
+	display: block;
+}
+
+.CharacterThumb.CharacterFull .CharacterURL input[type="text"]
+{
+	width: 75%;
+}
+
+.EditMode .CharacterThumb.CharacterFull
+{
+	left: 50%;
+	position: fixed;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.CharacterThumb .CharacterNew
+{
+	font-size: 3.5vw;
+	margin: auto;
+}
+
+.NewCharacterCard
+{
+	min-width:20%;
+}
+
+.CharacterCardContainer
+{
+	display: flex;
+	flex-wrap: wrap;
+}
+
+/******************* Rank Mode *******************/
+
+.RankingContainer .CharacterThumb.CharacterFull
+{
+	max-width: 50%;
+	cursor: pointer;
+}
+
+.RankMode .CharacterClose, .RankMode .CharacterThumb.CharacterFull .CharacterURL
+{
+	display: none;
+}
+
+.RankingContainer
+{
+	left: 50%;
+	position: fixed;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	
+	background-color: rgb(255,255,255);
+	border-color: rgb(20,20,20);
+	border-radius: 6px;
+	border-style: solid;
+	border-width: 1px;
+	box-shadow: 6px 6px 4px rgba(0,0,0,.7);
+	box-sizing: border-box;
+	
+	display: none;
+	
+	padding: 10px;
+}
+
+.RankingContainerTitle
+{
+	font-weight: bold;
+	font-size: 1.5em;
+}
+
+.RankingCardContainer
+{
+	display: flex;
+}
