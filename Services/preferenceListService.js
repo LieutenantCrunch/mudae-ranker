@@ -1,27 +1,33 @@
+// Based on code from: https://stackoverflow.com/questions/31298996/sorting-a-set-of-objects-by-a-users-preference
 mudaeRanker.service('PreferenceList', [function() {
 	var service = {
 		size: 0,
-		indicies: [0],
+		indices: [0],
 		current: {index: 1, centerIndex: 0, min: 0, max: 1},
 
 		resetToCount: function (count)
 		{
 			service.size = count;
-			service.indicies = [0];
+			service.indices = [0];
 			service.current = {index: 1, centerIndex: 0, min: 0, max: 1};
 		},
 
-		addAnswer: function(x, y, pref) 
+		addAnswer: function(pref) 
 		{
 			if (pref == -1) // Left
-				service.current.max = service.current.centerIndex
-			else // Right
+				service.current.max = service.current.centerIndex;
+			else if (pref == 1) // Right
 				service.current.min = service.current.centerIndex + 1;
+			else // Skip
+			{
+				service.size--;
+				return;
+			}
 
 			if (service.current.min == service.current.max)
 			{
-				service.indicies.splice(service.current.min, 0, service.current.index);
-				service.current = {index: ++service.current.index, centerIndex: 0, min: 0, max: service.indicies.length};
+				service.indices.splice(service.current.min, 0, service.current.index);
+				service.current = {index: ++service.current.index, centerIndex: 0, min: 0, max: service.indices.length};
 			}
 		},
 
@@ -34,7 +40,7 @@ mudaeRanker.service('PreferenceList', [function() {
 
 			return({
 				leftCompareIndex: service.current.index, 
-				rightCompareIndex: service.indicies[service.current.centerIndex]
+				rightCompareIndex: service.indices[service.current.centerIndex]
 			});
 		},
 
@@ -42,9 +48,9 @@ mudaeRanker.service('PreferenceList', [function() {
 		{
 			var index = [];
 
-			for (var i = 0; i < service.indicies.length; i++)
+			for (var i = 0; i < service.indices.length; i++)
 			{
-				index.push(service.indicies[i]);
+				index.push(service.indices[i]);
 			}
 
 			return(index);
