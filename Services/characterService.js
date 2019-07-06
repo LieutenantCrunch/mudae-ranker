@@ -200,11 +200,12 @@ mudaeRanker.service('Characters', ['$rootScope', 'Mode', 'PreferenceList', funct
 				}
 				*/
 			}
-			else if (service.mode === Mode.Rank)
+			// This was removed once the left/right placeholder cards were added to the Ranking Container
+			/*else if (service.mode === Mode.Rank)
 			{
 				var answer = (index === service._currentLeftIndex ? -1 : 1);
 
-				PreferenceList.addAnswer(service._currentLeftIndex, service._currentRightIndex, answer);
+				PreferenceList.addAnswer(answer);
 
 				while (service._rankingCardContainer.hasChildNodes()) {
 					angular.element(service._rankingCardContainer.lastChild).remove();
@@ -220,7 +221,7 @@ mudaeRanker.service('Characters', ['$rootScope', 'Mode', 'PreferenceList', funct
 				{
 					service.endRankMode();
 				}
-			}
+			}*/
 		},
 
 		minimizeName: function (name)
@@ -242,8 +243,53 @@ mudaeRanker.service('Characters', ['$rootScope', 'Mode', 'PreferenceList', funct
 		_rankingContainer: null,
 		_currentLeftIndex: -1,
 		_currentRightIndex: -1,
+		leftCompare: null,
 		
-		endRankMode: function()
+		getLeftCompare: function ()
+		{
+			return service.leftCompare;
+		},
+		
+		selectLeft: function ()
+		{
+			PreferenceList.addAnswer(-1);
+			service.presentCardsForComparison();
+		},
+		
+		skipLeft: function ()
+		{
+			var skippedCharacter = service._rankedCharacters.splice(service._currentLeftIndex, 1).pop();
+
+			skippedCharacter.skip = true; // If the checkbox was actually working properly, this wouldn't really be necessary, but oh well
+			service._discardedCharacters.push(skippedCharacter);
+			PreferenceList.addAnswer(0);
+			service.presentCardsForComparison();
+		},
+
+		rightCompare: null,
+		
+		getRightCompare: function ()
+		{
+			return service.rightCompare;
+		},
+		
+		selectRight: function ()
+		{
+			PreferenceList.addAnswer(1);
+			service.presentCardsForComparison();
+		},
+		
+		skipRight: function ()
+		{
+			var skippedCharacter = service._rankedCharacters.splice(service._currentRightIndex, 1).pop();
+			
+			skippedCharacter.skip = true; // If the checkbox was actually working properly, this wouldn't really be necessary, but oh well
+			service._discardedCharacters.push();
+			PreferenceList.addAnswer(0);
+			service.presentCardsForComparison();
+		},
+		
+		endRankMode: function ()
 		{
 			// Make sure we have a reference to the ranking container
 			if (!service._rankingContainer)
@@ -259,8 +305,10 @@ mudaeRanker.service('Characters', ['$rootScope', 'Mode', 'PreferenceList', funct
 
 			for (var i = 0; i < total; i++)
 			{
-				newCharacters.push(service.characters[sortedIndices[i]]);
+				newCharacters.push(service._rankedCharacters[sortedIndices[i]]);
 			}
+
+			newCharacters.push(...service._discardedCharacters);
 
 			service.updateAll(newCharacters);
 			service.toggleMode();
@@ -306,41 +354,25 @@ mudaeRanker.service('Characters', ['$rootScope', 'Mode', 'PreferenceList', funct
 			}
 
 			PreferenceList.resetToCount(service._rankedCharacters.length);
-
+			service.presentCardsForComparison();
+		},
+		
+		presentCardsForComparison: function ()
+		{
 			var displayCards = PreferenceList.getQuestion();
-
+			
 			if (displayCards)
 			{
-				service.presentCardsForComparison(displayCards.leftCompareIndex, displayCards.rightCompareIndex);
+				service._currentLeftIndex = displayCards.leftCompareIndex;
+				service._currentRightIndex = displayCards.rightCompareIndex;
+
+				service.leftCompare = service._rankedCharacters[service._currentLeftIndex];
+				service.rightCompare = service._rankedCharacters[service._currentRightIndex];
 			}
 			else
 			{
 				service.endRankMode(); // Or do something else?
 			}
-		},
-		
-		presentCardsForComparison: function (leftIndex, rightIndex)
-		{
-			service._currentLeftIndex = leftIndex;
-			service._currentRightIndex = rightIndex;
-
-			// Bug: This will give us the index for the entire set of characters, not just for the ranked characters
-			var leftCharacterClone = $('*[data-character-index="' + leftIndex + '"]')[0].cloneNode(true);
-			var rightCharacterClone = $('*[data-character-index="' + rightIndex + '"]')[0].cloneNode(true);
-
-			leftCharacterClone.className += ' CharacterFull';
-			rightCharacterClone.className += ' CharacterFull';
-
-			service._rankingCardContainer.appendChild(leftCharacterClone);
-			service._rankingCardContainer.appendChild(rightCharacterClone);
-
-			angular.element(leftCharacterClone).on('click', function(event) {
-				service.clickCard(this, leftIndex);
-			});
-
-			angular.element(rightCharacterClone).on('click', function(event) {
-				service.clickCard(this, rightIndex);
-			});
 		}
 	};
 	
