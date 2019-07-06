@@ -57,6 +57,7 @@ body
 .CharacterThumb .CharacterURL
 {
 	display: none;
+	margin-top: 5px;
 }
 
 .CharacterThumb .CharacterSkip
@@ -110,13 +111,12 @@ body
 {
 	display: block;
 	height: auto;
-	/*margin: 5px;
-	width: auto;*/
 }
 
 .CharacterThumb.CharacterFull .CharacterURL, .CharacterThumb.CharacterFull .CharacterSkip
 {
 	display: block;
+	text-align: center;
 }
 
 .CharacterThumb.CharacterFull .CharacterURL input[type="text"]
@@ -157,7 +157,7 @@ body
 	cursor: pointer;
 }
 
-.RankMode .CharacterClose, .RankMode .CharacterThumb.CharacterFull .CharacterURL
+.RankMode .CharacterClose
 {
 	display: none;
 }
