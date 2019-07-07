@@ -10,7 +10,8 @@ This app will allow you to sort your harem based on a series of "x vs y" questio
 
 This is something I threw together in my free time, I can't promise that it will be bug free or that every exception case will be handled. Please review the Issues section to see if there's any feature that's not working that you should be aware of.
 
-## Instructions
+## Basic Instructions
+This will walk you through importing your first batch of characters, sorting them, and then exporting the sort commands.
 1. Run **$mmas** in Discord.
    - **_NOTE_**: You will be spammed with direct messages from your maid (or Mudae if you don't have a maid) for every character in your harem, so the larger your harem is, the more spam you'll get.
 2. Copy all of the series and character information from the direct message.
@@ -37,6 +38,20 @@ This is something I threw together in my free time, I can't promise that it will
 9. Your harem should now be sorted based on your preferences.
    - It's highly recommended that you click **Export All Characters** at this point so you can import them in the same order they're in now that you've sorted them.
 10. Now you can click **Generate Sort Commands** and the list of commands you need to run to sort your harem on Discord will be shown.
+
+## Merging Instructions
+Claimed a bunch of characters and didn't keep your Mudae Ranker data up-to-date? Shame shame. But hey, that's what merging is for.
+1. Paste your previously saved data into the input field, then click **Parse Input**
+2. Run **$mmas** and copy the entire dump just like you did the first time you imported your harem
+3. All new characters will be added and looked up from Anilist
+   - As a bonus, characters that do not have their images set will also be looked up on Anilist on the off chance that something has changed and their images can be found now. It is actually possible for this to happen!
+4. At this point, you can export the characters, go through the process of ranking, or do whatever.
+
+## Adding New Characters
+Sometimes you just want to add a single new character to your harem and don't feel like using the merge functionality. That's what the 🆕 button is for!
+1. Click the 🆕 button, a popup will display with fields for you to fill out
+2. Fill out the details, copying them from Mudae as they'd show up if you used the **$im** command on the character
+3. Click the ✅ button when you're done to save the character, it will be added to the end of the list
 
 ## Anilist
 You may wonder why not all characters have images, why the images are different from what you see on Discord, or why it takes so long for all of the images to show up when you parse your $mmas dump the first time. This is because Mudae does not have an API, so all characters have to be looked up somewhere in order to get images for them. Fortunately, Anilist provides an API to request animanga characters and the images for them, and it seems as though some of Mudae's images were ripped from Anilist (or vice versa... but I doubt it), so it works well for populating the images. There are some limitations when using the Anilist API, so I'll explain those below and their effects on the Mudae Ranker app.
