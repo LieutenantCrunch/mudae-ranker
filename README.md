@@ -36,7 +36,7 @@ This is something I threw together in my free time, I can't promise that it will
 8. The ranking pop up will show you two characters. Click on the one that you prefer. Keep doing this until the ranking popup goes away.
 9. Your harem should now be sorted based on your preferences.
    - It's highly recommended that you click **Export All Characters** at this point so you can import them in the same order they're in now that you've sorted them.
-10. **_DON'T ACTUALLY DO THIS YET, IT'S NOT WORKING_** Now you can click **Generate Sort Commands** and the list of commands you need to run to sort your harem on Discord will be shown.
+10. Now you can click **Generate Sort Commands** and the list of commands you need to run to sort your harem on Discord will be shown.
 
 ## Anilist
 You may wonder why not all characters have images, why the images are different from what you see on Discord, or why it takes so long for all of the images to show up when you parse your $mmas dump the first time. This is because Mudae does not have an API, so all characters have to be looked up somewhere in order to get images for them. Fortunately, Anilist provides an API to request animanga characters and the images for them, and it seems as though some of Mudae's images were ripped from Anilist (or vice versa... but I doubt it), so it works well for populating the images. There are some limitations when using the Anilist API, so I'll explain those below and their effects on the Mudae Ranker app.
