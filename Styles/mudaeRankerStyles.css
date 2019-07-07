@@ -192,3 +192,58 @@ body
 {
 	display: flex;
 }
+
+/******************* Output Field Flash *******************/
+.FlashError
+{
+	-webkit-animation: FlashError 1s ease-in;
+	animation: FlashError 1s ease-in;
+}
+
+@-webkit-keyframes FlashError
+{
+	from {background-color: rgb(255,0,0);}
+	to {background-color: rgb(255,255,255);}
+}
+
+@keyframes FlashError
+{
+	from {background-color: rgb(255,0,0);}
+	to {background-color: rgb(255,255,255);}
+}
+
+.FlashSuccess
+{
+	-webkit-animation: FlashSuccess 1s ease-in;
+	animation: FlashSuccess 1s ease-in;
+}
+
+@-webkit-keyframes FlashSuccess
+{
+	from {background-color: rgb(0,255,0);}
+	to {background-color: rgb(255,255,255);}
+}
+
+@keyframes FlashSuccess
+{
+	from {background-color: rgb(0,255,0);}
+	to {background-color: rgb(255,255,255);}
+}
+
+.FlashWarning
+{
+	-webkit-animation: FlashWarning 1s ease-in;
+	animation: FlashWarning 1s ease-in;
+}
+
+@-webkit-keyframes FlashWarning
+{
+	from {background-color: rgb(255,255,0);}
+	to {background-color: rgb(255,255,255);}
+}
+
+@keyframes FlashWarning
+{
+	from {background-color: rgb(255,255,0);}
+	to {background-color: rgb(255,255,255);}
+}
