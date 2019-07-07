@@ -1,10 +1,10 @@
-mudaeRanker.directive('mudrParseInput', ['Characters', 'Utilities', function(Characters, Utilities) {
+mudaeRanker.directive('mudrParseInput', ['Characters', function(Characters) {
 	return {
 		restrict: 'A',
 		scope: false,
 		link: function(scope, element, attrs) {
 			element.on('click', function(event) {
-				Utilities.parseDiscordDump($('#DiscordDump').first().val());
+				Characters.parseInputField($('#InputField').first().val());
 			});
 		}
 	}

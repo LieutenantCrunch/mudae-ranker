@@ -4,7 +4,7 @@ mudaeRanker.directive('mudrExportSort', ['Characters', function(Characters) {
 		scope: false,
 		link: function(scope, element, attrs) {
 			element.on('click', function(event) {
-				Characters.exportSort($('#JSONExport').first()[0]);
+				Characters.exportSort();
 			});
 		}
 	}

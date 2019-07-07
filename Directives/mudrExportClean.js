@@ -4,7 +4,7 @@ mudaeRanker.directive('mudrExportClean', [function() {
 		scope: false,
 		link: function(scope, element, attrs) {
 			element.on('click', function(event) {
-				$('#JSONExport').val('');
+				$('#OutputField').val('');
 			});
 		}
 	}
