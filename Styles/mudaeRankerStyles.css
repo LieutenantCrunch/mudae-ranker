@@ -18,7 +18,7 @@ body
 
 .CharacterThumb
 {
-	background-color: rgb(255,255,255);
+	background-color: rgba(255,255,255,.9);
 	border-color: rgb(20,20,20);
 	border-radius: 6px;
 	border-style: solid;
@@ -27,7 +27,6 @@ body
 	box-sizing: border-box;
 	width: 5%;
 	padding: 3px;
-	/*display: inline-block;*/ /*Now using flex*/
 	display: flex;
 	margin: 3px;
 	cursor: pointer;
@@ -162,6 +161,24 @@ body
 }
 
 /******************* Rank Mode *******************/
+
+.RankingBlocker
+{
+	background-color:rgb(0,0,0,.5);
+	bottom: 0;
+	display: none;
+	left: 0;
+	position: fixed;
+	right: 0;
+	top: 0;
+	z-index: -1;
+}
+
+.RankMode .RankingBlocker
+{
+	display: block;
+	z-index: auto;
+}
 
 .RankingContainer .CharacterThumb.CharacterFull
 {
