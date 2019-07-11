@@ -5,8 +5,9 @@
 	<!-- Libraries -->
 	<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular.js"></script>
-	<!-- https://gasparesganga.com/labs/jquery-message-box/ -->
-	<script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-message-box@3.1.0/dist/messagebox.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-message-box@3.1.0/dist/messagebox.min.js"></script> <!-- https://gasparesganga.com/labs/jquery-message-box/ -->
+	<script src="DnD/Sortable.min.js"></script> <!-- https://github.com/SortableJS/Sortable -->
+	<script src="DnD/angular-legacy-sortable.js"></script> <!-- https://github.com/SortableJS/angular-legacy-sortablejs -->
 
 	<!-- App -->
 	<script src="Apps/mudaeRanker.js"></script>
@@ -42,7 +43,7 @@
 
 	<!-- Styles -->
 	<link rel="stylesheet" type="text/css" href="Styles/mudaeRankerStyles.css">
-	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-message-box@3.1.0/dist/messagebox.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-message-box@3.1.0/dist/messagebox.min.css"> <!-- https://gasparesganga.com/labs/jquery-message-box/ -->
 </head>
 <body data-ng-app="mudaeRanker" data-ng-controller="mudaeRankerController" data-ng-attr-class="{{ getModeClassName() }}" data-mudr-body>
 	<textarea id="InputField" class="InputField" placeholder="Paste a previous export or results from $mmas here" ></textarea>
@@ -56,11 +57,11 @@
 	<br />
 	<br />
 
-	<div class="CharacterCardContainer">
-		<div class="CharacterThumb" data-mudr-new-thumb>
-			<div class="CharacterNew">&#127381;</div>
-		</div>
+	<div class="CharacterThumb" data-mudr-new-thumb>
+		<div class="CharacterNew">&#127381;</div>
+	</div>
 
+	<div class="CharacterCardContainer" data-ng-sortable>
 		<div data-ng-repeat="c in characters" data-ng-attr-class="{{ c.className }}" data-ng-attr-title="{{ c.series + ': ' + c.name}}" data-mudr-card-click data-character-index="{{ $index }}">
 			<div class="CharacterName">
 				<span class="CharacterNameText">{{ c.name }}</span><span class="CharacterClose" title="Close Card" data-mudr-card-close>&#10062;</span>
@@ -74,20 +75,20 @@
 				<label data-mudr-skip-input><input type="checkbox" data-ng-model="c.skip" />Skip?</label><span class="CharacterDelete" title="Delete Character" data-mudr-card-delete>&#128465;</span>
 			</div>
 		</div>
+	</div>
 
-		<div id="NewCharacterCard" class="CharacterThumb CharacterFull NewCharacterCard" style="display:none" data-mudr-new-character-card>
-			<div class="CharacterName">
-				<input id="NewCharacterName" type="text" class="CharacterNameText" placeholder="Character Name" /><span id="NewCharacterCancel" class="CharacterClose" title="Close Card">&#10062;</span>
-			</div>
-			<div>Make sure you put in the full name, including any series abbreviations. For Example: "Rem (RZ)", not "Rem"</div>
-			<div class="CharacterSeries"><input id="NewCharacterSeries" type="text" placeholder="Series" /></div>
-			<img />
-			<div class="CharacterURL">
-				<label>URL: <input id="NewCharacterUrl" type="text" value="" /></label>
-			</div>
-			<div class="CharacterSkip">
-				<label><input id="NewCharacterSkip" type="checkbox" />Skip?</label><span id="NewCharacterAdd" class="CharacterClose" title="Add Character">&#9989;</span>
-			</div>
+	<div id="NewCharacterCard" class="CharacterThumb CharacterFull NewCharacterCard" style="display:none" data-mudr-new-character-card>
+		<div class="CharacterName">
+			<input id="NewCharacterName" type="text" class="CharacterNameText" placeholder="Character Name" /><span id="NewCharacterCancel" class="CharacterClose" title="Close Card">&#10062;</span>
+		</div>
+		<div>Make sure you put in the full name, including any series abbreviations. For Example: "Rem (RZ)", not "Rem"</div>
+		<div class="CharacterSeries"><input id="NewCharacterSeries" type="text" placeholder="Series" /></div>
+		<img />
+		<div class="CharacterURL">
+			<label>URL: <input id="NewCharacterUrl" type="text" value="" /></label>
+		</div>
+		<div class="CharacterSkip">
+			<label><input id="NewCharacterSkip" type="checkbox" />Skip?</label><span id="NewCharacterAdd" class="CharacterClose" title="Add Character">&#9989;</span>
 		</div>
 	</div>
 
