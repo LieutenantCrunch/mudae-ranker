@@ -4,8 +4,11 @@ mudaeRanker.directive('mudrBody', ['Characters', function(Characters) {
 		scope: false,
 		link: function(scope, element, attrs) {
 			element.on('click', function(event) {
-				Characters.minimizeActiveCard();
-				scope.$apply();
+				if (!Characters.inMessageBox)
+				{
+					Characters.minimizeActiveCard();
+					scope.$apply();
+				}
 			});
 		}
 	}

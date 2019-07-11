@@ -5,6 +5,8 @@
 	<!-- Libraries -->
 	<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular.js"></script>
+	<!-- https://gasparesganga.com/labs/jquery-message-box/ -->
+	<script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-message-box@3.1.0/dist/messagebox.min.js"></script>
 
 	<!-- App -->
 	<script src="Apps/mudaeRanker.js"></script>
@@ -21,6 +23,7 @@
 	<script src="Directives/mudrBody.js"></script>
 	<script src="Directives/mudrCardClick.js"></script>
 	<script src="Directives/mudrCardClose.js"></script>
+	<script src="Directives/mudrCardDelete.js"></script>
 	<script src="Directives/mudrExportClean.js"></script>
 	<script src="Directives/mudrExportJson.js"></script>
 	<script src="Directives/mudrExportSort.js"></script>
@@ -39,6 +42,7 @@
 
 	<!-- Styles -->
 	<link rel="stylesheet" type="text/css" href="Styles/mudaeRankerStyles.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-message-box@3.1.0/dist/messagebox.min.css">
 </head>
 <body data-ng-app="mudaeRanker" data-ng-controller="mudaeRankerController" data-ng-attr-class="{{ getModeClassName() }}" data-mudr-body>
 	<textarea id="InputField" class="InputField" placeholder="Paste a previous export or results from $mmas here" ></textarea>
@@ -67,7 +71,7 @@
 				<label>URL: <input type="text" value="{{ c.imageUrl }}" data-mudr-url-input /></label>
 			</div>
 			<div class="CharacterSkip">
-				<label data-mudr-skip-input><input type="checkbox" data-ng-model="c.skip" />Skip?</label>
+				<label data-mudr-skip-input><input type="checkbox" data-ng-model="c.skip" />Skip?</label><span class="CharacterDelete" title="Delete Character" data-mudr-card-delete>&#128465;</span>
 			</div>
 		</div>
 
