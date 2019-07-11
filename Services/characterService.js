@@ -409,7 +409,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			$rootScope.$apply();
 		},
 
-		// Probably could easily rework this to run off scope.$index in a directive
+		// Unused
 		removeCharacter: function (name, series)
 		{
 			var totalCharacters = service.characters.length;
@@ -483,6 +483,39 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 					service.activeIndex = -1;
 				}
 			}
+		},
+
+		inMessageBox: false, // I don't like this, but oh well
+
+		deleteActiveCard: function ()
+		{
+			return new Promise(function(resolve, reject) {
+				if (service.mode === Mode.Edit)
+				{
+					if (service.activeIndex >= 0) // If there is a currently active character
+					{
+						service.inMessageBox = true;
+
+						$.MessageBox({buttonDone: 'Yes', 
+							buttonFail: 'No', 
+							buttonsOrder: 'done fail', 
+							message: 'Are you sure you want to delete this character?',
+							title: 'Confirm Deletion'
+						}).done(function (data, button) {
+							service.characters.splice(service.activeIndex, 1);
+
+							// Reset the activeIndex to -1
+							service.activeIndex = -1;
+							service.inMessageBox = false;
+							resolve();
+						}).fail(function (data, button) {
+							console.log('Then why did you click the delete button?');
+							service.inMessageBox = false;
+							reject();
+						});
+					}
+				}
+			});
 		},
 
 		clickCard: function (element, index)
