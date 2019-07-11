@@ -10,6 +10,12 @@ body
 	height: 10em;
 }
 
+.CharacterCardContainer
+{
+	display: flex;
+	flex-wrap: wrap;
+}
+
 .CharacterThumb
 {
 	background-color: rgb(255,255,255);
@@ -141,7 +147,7 @@ body
 	left: 50%;
 	position: fixed;
 	top: 50%;
-	transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%) translateZ(0) !important;
 }
 
 .CharacterThumb .CharacterNew
@@ -153,12 +159,6 @@ body
 .NewCharacterCard
 {
 	min-width:20%;
-}
-
-.CharacterCardContainer
-{
-	display: flex;
-	flex-wrap: wrap;
 }
 
 /******************* Rank Mode *******************/
