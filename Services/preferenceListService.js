@@ -4,6 +4,7 @@ mudaeRanker.service('PreferenceList', [function() {
 		size: 0,
 		indices: [0],
 		current: {index: 1, centerIndex: 0, min: 0, max: 1},
+		pauseIndex: -1,
 
 		resetToCount: function (count)
 		{
@@ -31,6 +32,46 @@ mudaeRanker.service('PreferenceList', [function() {
 			}
 		},
 
+		pause: function ()
+		{
+			// Still wrong
+			// Splice a character into the array based on what we know
+			//debugger;
+			// service.current.index is the character that we are trying to figure out where they go, so they need to be the character that's getting spliced somewhere
+				// service.indices.splice(, 0, service.current.index);
+			
+			// service.current.centerIndex indicates the character they're being compared to
+			// If the max is equal to the number of indices, then we have not made a decision on the current character, so they need to be placed back at max
+				// service.indices.splice(service.current.max, 0, service.current.index);
+			// If the max is not equal to the number of indices, then we have made a decision on the current character, place them at center + 1
+				// service.indices.splice(service.current.center + 1, 0, service.current.index);
+
+			if (service.current.max == service.indices.length)
+			{
+				service.pauseIndex = service.current.max;
+				service.indices.splice(service.current.max, 0, service.current.index);
+			}
+			else
+			{
+				service.pauseIndex = service.current.center + 1;
+				service.indices.splice(service.current.center + 1, 0, service.current.index);
+			}
+		},
+
+		resume: function ()
+		{
+			// Still wrong
+			// Splice the character back out of the array and return where it was when we were comparing it
+				service.indices.splice(service.pauseIndex, 1);
+				
+				service.indices.sort(); // The sort will have been applied, so now we need these to be in the proper order
+				
+				var positioningInfo =  { currentPosition: service.pauseIndex, formerPosition: service.current.index};
+				service.pauseIndex = -1;
+
+				return positioningInfo;
+		},
+
 		getQuestion: function()
 		{
 			if (service.current.index >= service.size) // If we've gone past the end of the array, stop
@@ -53,7 +94,7 @@ mudaeRanker.service('PreferenceList', [function() {
 				index.push(service.indices[i]);
 			}
 
-			return(index);
+			return index;
 		}
 	};
 	
