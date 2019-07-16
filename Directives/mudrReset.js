@@ -1,15 +1,10 @@
-mudaeRanker.directive('mudrReset', ['Characters', function(Characters) {
+mudaeRanker.directive('mudrReset', ['Characters', 'Utilities', function(Characters, Utilities) {
 	return {
 		restrict: 'A',
 		scope: false,
 		link: function(scope, element, attrs) {
 			element.on('click', function(event) {
-				$.MessageBox({buttonDone: 'Yes', 
-					buttonFail: 'No', 
-					buttonsOrder: 'done fail', 
-					message: 'Are you sure you want to reset everything?',
-					title: 'Confirm Reset'
-				}).done(function (data, button) {
+				Utilities.confirm('Are you sure you want to reset everything?', 'Confirm Reset').done(function (data, button) {
 					$('#InputField').val('');
 					$('#OutputField').val('');
 					Characters.clean();
