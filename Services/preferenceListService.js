@@ -3,85 +3,90 @@ mudaeRanker.service('PreferenceList', [function() {
 	var service = {
 		size: 0,
 		indices: [0],
-		current: {index: 1, centerIndex: 0, min: 0, max: 1},
-		pauseIndex: -1,
+		currentIndex: 1, 
+		centerIndex: 0, 
+		min: 0, 
+		max: 1,
+		lastCompare: 0,
 
 		resetToCount: function (count)
 		{
 			service.size = count;
 			service.indices = [0];
-			service.current = {index: 1, centerIndex: 0, min: 0, max: 1};
+			service.currentIndex = 1;
+			service.centerIndex = 0;
+			service.min = 0;
+			service.max = 1;
+			service.lastCompare = 0;
 		},
 
 		addAnswer: function(pref) 
 		{
 			if (pref == -1) // Left
-				service.current.max = service.current.centerIndex;
+			{
+				service.max = service.lastCompare = service.centerIndex;
+			}
 			else if (pref == 1) // Right
-				service.current.min = service.current.centerIndex + 1;
+			{
+				service.min = service.lastCompare = service.centerIndex + 1;
+			}
 			else // Skip
 			{
 				service.size--;
 				return;
 			}
 
-			if (service.current.min == service.current.max)
+			if (service.min == service.max)
 			{
-				service.indices.splice(service.current.min, 0, service.current.index);
-				service.current = {index: ++service.current.index, centerIndex: 0, min: 0, max: service.indices.length};
+				service.indices.splice(service.min, 0, service.currentIndex);
+				service.currentIndex = service.currentIndex < service.indices.length ? service.indices.length : service.currentIndex + 1;
+				service.centerIndex = 0;
+				service.min = 0;
+				service.max = service.indices.length;
 			}
 		},
 
 		pause: function ()
 		{
-			// Still wrong
-			// Splice a character into the array based on what we know
-			//debugger;
-			// service.current.index is the character that we are trying to figure out where they go, so they need to be the character that's getting spliced somewhere
-				// service.indices.splice(, 0, service.current.index);
-			
-			// service.current.centerIndex indicates the character they're being compared to
-			// If the max is equal to the number of indices, then we have not made a decision on the current character, so they need to be placed back at max
-				// service.indices.splice(service.current.max, 0, service.current.index);
-			// If the max is not equal to the number of indices, then we have made a decision on the current character, place them at center + 1
-				// service.indices.splice(service.current.center + 1, 0, service.current.index);
-
-			if (service.current.max == service.indices.length)
+			if (service.max == service.indices.length && service.min == 0) // They haven't made a choice on the current character
 			{
-				service.pauseIndex = service.current.max;
-				service.indices.splice(service.current.max, 0, service.current.index);
+				// Leave the indices as they are, there's no reason to add the current character in
 			}
 			else
 			{
-				service.pauseIndex = service.current.center + 1;
-				service.indices.splice(service.current.center + 1, 0, service.current.index);
+				// They made at least one choice, splice the character in at the last choice that was made
+				service.indices.splice(service.lastCompare, 0, service.currentIndex);
 			}
 		},
 
 		resume: function ()
 		{
-			// Still wrong
-			// Splice the character back out of the array and return where it was when we were comparing it
-				service.indices.splice(service.pauseIndex, 1);
-				
-				service.indices.sort(); // The sort will have been applied, so now we need these to be in the proper order
-				
-				var positioningInfo =  { currentPosition: service.pauseIndex, formerPosition: service.current.index};
-				service.pauseIndex = -1;
+			var indicesLength = service.indices.length;
+			
+			service.indices.length = 0; // Reset the indices array
+			
+			for (var i = 0; i < indicesLength; i++) // Repopulate the array to the same size but now sorted as 0...n since those are the new indices
+			{
+				service.indices.push(i);
+			}
 
-				return positioningInfo;
+			if (service.currentIndex < indicesLength) // If the current index was added to the indices
+			{
+				// Then we need to pop the index out and update it to its new value
+				service.currentIndex = service.indices.splice(service.lastCompare, 1)[0];
+			}
 		},
 
 		getQuestion: function()
 		{
-			if (service.current.index >= service.size) // If we've gone past the end of the array, stop
+			if (service.currentIndex >= service.size) // If we've gone past the end of the array, stop
 				return null;
 				
-			service.current.centerIndex = Math.floor((service.current.min + service.current.max) / 2); // Calculate the center index
+			service.centerIndex = Math.floor((service.min + service.max) / 2); // Calculate the center index
 
 			return({
-				leftCompareIndex: service.current.index, 
-				rightCompareIndex: service.indices[service.current.centerIndex]
+				leftCompareIndex: service.currentIndex, 
+				rightCompareIndex: service.indices[service.centerIndex]
 			});
 		},
 

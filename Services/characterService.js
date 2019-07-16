@@ -332,6 +332,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 		clean: function ()
 		{
 			service.characters.length = 0;
+			service.rankingInProgress = false;
 			return service.characters;
 		},
 
@@ -687,7 +688,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			PreferenceList.resetToCount(service._rankedCharacters.length);
 			service.presentCardsForComparison();
 		},
-		
+
 		pauseRankMode: function ()
 		{
 			service._rankingContainer.style.display = '';
@@ -695,7 +696,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			if (service.rankingInProgress)
 			{
 				PreferenceList.pause();
-				
+
 				var sortedIndices = PreferenceList.getOrder();
 				var total = sortedIndices.length;
 				var newCharacters = [];
@@ -746,13 +747,8 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 					service._rankedCharacters.push(character);
 				}
 			}
-			
-			var positionInfo = PreferenceList.resume();
 
-			// Put the character back where it was
-			var currentCompare = service._rankedCharacters.splice(positionInfo.currentPosition, 1)[0];
-			service._rankedCharacters.splice(positionInfo.formerPosition, 0, currentCompare);
-
+			PreferenceList.resume();
 			service.presentCardsForComparison();
 		},
 
