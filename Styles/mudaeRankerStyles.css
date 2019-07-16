@@ -217,6 +217,12 @@ body
 	font-size: 1.5em;
 }
 
+.RankingContainerClose
+{
+	cursor: pointer;
+	float: right;
+}
+
 .RankingCardContainer
 {
 	display: flex;
