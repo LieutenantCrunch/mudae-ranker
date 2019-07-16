@@ -298,10 +298,10 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			switch(service.mode)
 			{
 			case Mode.Rank:
-				return 'Edit Mode';
+				return 'Start Editing';
 			case Mode.Edit:
 			default:
-				return 'Rank Mode';
+				return 'Start Ranking';
 			}
 		},
 
@@ -314,7 +314,6 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 				break;
 			case Mode.Edit:
 			default:
-				service.mode = Mode.Rank;
 				service.startRankMode();
 				break;
 			}
@@ -323,6 +322,11 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 		getCharacters: function ()
 		{
 			return service.characters;
+		},
+
+		hasCharacters: function ()
+		{
+			return service.characters.length > 0 ? true : false;
 		},
 
 		clean: function ()
@@ -496,12 +500,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 					{
 						service.inMessageBox = true;
 
-						$.MessageBox({buttonDone: 'Yes', 
-							buttonFail: 'No', 
-							buttonsOrder: 'done fail', 
-							message: 'Are you sure you want to delete this character?',
-							title: 'Confirm Deletion'
-						}).done(function (data, button) {
+						Utilities.confirm('Are you sure you want to delete this character?', 'Confirm Deletion').done(function (data, button) {
 							service.characters.splice(service.activeIndex, 1);
 
 							// Reset the activeIndex to -1
@@ -581,6 +580,12 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 		_currentLeftIndex: -1,
 		_currentRightIndex: -1,
 		leftCompare: null,
+		rankingInProgress: false,
+		
+		getRankingInProgress: function ()
+		{
+			return service.rankingInProgress;
+		},
 		
 		getLeftCompare: function ()
 		{
@@ -589,12 +594,16 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 		
 		selectLeft: function ()
 		{
+			service.rankingInProgress = true;
+
 			PreferenceList.addAnswer(-1);
 			service.presentCardsForComparison();
 		},
 		
 		skipLeft: function ()
 		{
+			service.rankingInProgress = true;
+
 			var skippedCharacter = service._rankedCharacters.splice(service._currentLeftIndex, 1).pop();
 
 			skippedCharacter.skip = true; // If the checkbox was actually working properly, this wouldn't really be necessary, but oh well
@@ -612,12 +621,16 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 		
 		selectRight: function ()
 		{
+			service.rankingInProgress = true;
+
 			PreferenceList.addAnswer(1);
 			service.presentCardsForComparison();
 		},
 		
 		skipRight: function ()
 		{
+			service.rankingInProgress = true;
+
 			var skippedCharacter = service._rankedCharacters.splice(service._currentRightIndex, 1).pop();
 			
 			skippedCharacter.skip = true; // If the checkbox was actually working properly, this wouldn't really be necessary, but oh well
@@ -625,41 +638,10 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			PreferenceList.addAnswer(0);
 			service.presentCardsForComparison();
 		},
-		
-		endRankMode: function ()
+
+		_initializeRankMode: function ()
 		{
-			// Make sure we have a reference to the ranking container
-			if (!service._rankingContainer)
-			{
-				service._rankingContainer = $('#RankingContainer')[0];
-			}
-
-			service._rankingContainer.style.display = '';
-			
-			var sortedIndices = PreferenceList.getOrder();
-			var total = sortedIndices.length;
-			var newCharacters = [];
-
-			for (var i = 0; i < total; i++)
-			{
-				newCharacters.push(service._rankedCharacters[sortedIndices[i]]);
-			}
-
-			newCharacters.push(...service._discardedCharacters);
-
-			service.updateAll(newCharacters);
-			service.toggleMode();
-		},
-
-		startRankMode: function()
-		{
-			// Ideally it would be nice if they could pause in the middle of ranking and come back in, buttttt we'll do that later
-			// Reset the arrays and all data
-			service._rankedCharacters.length = 0;
-			service._discardedCharacters.length = 0;
-
-			// Display the Ranking Container
-			var totalCharacters = service.characters.length;
+			service.mode = Mode.Rank;
 			
 			// Make sure we have a reference to the ranking container
 			if (!service._rankingContainer)
@@ -674,6 +656,18 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			{
 				service._rankingCardContainer = $('#RankingCardContainer')[0];
 			}
+		},
+
+		startRankMode: function()
+		{
+			// Display the Ranking Container
+			service._initializeRankMode();
+
+			// Reset the arrays and all data
+			service._rankedCharacters.length = 0;
+			service._discardedCharacters.length = 0;
+
+			var totalCharacters = service.characters.length;
 
 			// Populate the arrays we'll be sorting and discarding
 			for (var i = 0; i < totalCharacters; i++)
@@ -694,6 +688,95 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			service.presentCardsForComparison();
 		},
 		
+		pauseRankMode: function ()
+		{
+			service._rankingContainer.style.display = '';
+
+			if (service.rankingInProgress)
+			{
+				PreferenceList.pause();
+				
+				var sortedIndices = PreferenceList.getOrder();
+				var total = sortedIndices.length;
+				var newCharacters = [];
+
+				for (var i = 0; i < total; i++)
+				{
+					newCharacters.push(service._rankedCharacters[sortedIndices[i]]);
+				}
+
+				// Splice out the characters that were sorted, then add the remaining non-ranked after that
+				sortedIndices.sort();
+
+				for (var i = total - 1; i >= 0; i--)
+				{
+					service._rankedCharacters.splice(sortedIndices[i], 1);
+				}
+
+				newCharacters.push(...service._rankedCharacters);
+				newCharacters.push(...service._discardedCharacters);
+
+				service.updateAll(newCharacters);
+			}
+
+			service.toggleMode();
+		},
+
+		resumeRankMode: function ()
+		{
+			service._initializeRankMode();
+
+			// Reset the arrays and all data again
+			service._rankedCharacters.length = 0;
+			service._discardedCharacters.length = 0;
+			
+			var totalCharacters = service.characters.length;
+
+			// Populate the arrays we'll be sorting and discarding
+			for (var i = 0; i < totalCharacters; i++)
+			{
+				var character = service.characters[i];
+				
+				if (character.skip)
+				{
+					service._discardedCharacters.push(character);
+				}
+				else
+				{
+					service._rankedCharacters.push(character);
+				}
+			}
+			
+			var positionInfo = PreferenceList.resume();
+
+			// Put the character back where it was
+			var currentCompare = service._rankedCharacters.splice(positionInfo.currentPosition, 1)[0];
+			service._rankedCharacters.splice(positionInfo.formerPosition, 0, currentCompare);
+
+			service.presentCardsForComparison();
+		},
+
+		endRankMode: function ()
+		{
+			service._rankingContainer.style.display = '';
+			
+			var sortedIndices = PreferenceList.getOrder();
+			var total = sortedIndices.length;
+			var newCharacters = [];
+
+			for (var i = 0; i < total; i++)
+			{
+				newCharacters.push(service._rankedCharacters[sortedIndices[i]]);
+			}
+
+			newCharacters.push(...service._discardedCharacters);
+
+			service.updateAll(newCharacters);
+			service.toggleMode();
+
+			service.rankingInProgress = false;
+		},
+
 		presentCardsForComparison: function ()
 		{
 			var displayCards = PreferenceList.getQuestion();
@@ -710,6 +793,11 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			{
 				service.endRankMode(); // Or do something else?
 			}
+		},
+		
+		dragAndDropSortEnd: function (event)
+		{
+			
 		}
 	};
 	
