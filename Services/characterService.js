@@ -790,10 +790,124 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 				service.endRankMode(); // Or do something else?
 			}
 		},
-		
+
 		dragAndDropSortEnd: function (event)
 		{
-			
+			if (service.rankingInProgress)
+			{
+				var oldIndex = event.oldIndex;
+				var newIndex = event.newIndex;
+				var sortedTotal = PreferenceList.indices.length;
+				var currentInProgressIndex = PreferenceList.getIndexOfCurrentInProgress();
+
+				// The PreferenceList service needs to be updated if the character was outside the range of the PreferenceList's indices and is now inside or if the character was inside the indices
+				var characterWasOutside = (oldIndex >= sortedTotal);
+				var characterWasInside = (oldIndex < sortedTotal);
+				var characterIsNowOutside = (newIndex >= sortedTotal);
+				var characterIsNowInside = (newIndex < sortedTotal);
+				var currentInProgressIsInside = (currentInProgressIndex < sortedTotal);
+				
+				var preferenceListNeedsUpdate = (characterWasOutside && characterIsNowInside || characterWasInside);
+
+				if (preferenceListNeedsUpdate)
+				{
+					if (characterWasInside)
+					{
+						if (characterIsNowInside)
+						{
+							if (currentInProgressIsInside)
+							{
+								if (oldIndex == currentInProgressIndex) // If they moved the character that was in progress when they paused it
+								{
+									// Accept their decision and move on to the next character
+									PreferenceList.moveToNext();
+								}
+								else if (oldIndex < currentInProgressIndex) // If they moved a character ranked higher than the character in progress when they paused it
+								{
+									if (newIndex < currentInProgressIndex) // If the moved character is still ranked higher than the in progress character
+									{
+										// Don't need to do anything
+									}
+									else if (newIndex >= currentInProgressIndex) // If the moved character is now ranked lower than the in progress character
+									{
+										PreferenceList.incrementCurrentInProgressRank();
+									}
+								}
+								else if (oldIndex > currentInProgressIndex) // If they moved a character ranked lower than the character in progress when they paused it
+								{
+									if (newIndex <= currentInProgressIndex) // If the moved character is now ranked higher than the in progress character
+									{
+										PreferenceList.decrementCurrentInProgressRank();
+									}
+									else if (newIndex > currentInProgressIndex) // If the moved character is still ranked lower than the in progress character
+									{
+										// Don't need to do anything
+									}
+								}
+							}
+							else
+							{
+								// Don't need to do anything
+							}
+						}
+						else if (characterIsNowOutside)
+						{
+							if (currentInProgressIsInside)
+							{
+								if (oldIndex == currentInProgressIndex) // If they moved the character that was in progress when they paused it
+								{
+									// Take it out and move on to the next character
+									PreferenceList.removeCurrent();
+									PreferenceList.moveToNext();
+								}
+								else if (oldIndex < currentInProgressIndex) // If they moved a character ranked higher than the character in progress when they paused it
+								{
+									PreferenceList.removeIndex(oldIndex);
+									PreferenceList.incrementCurrentInProgressRank();
+								}
+								else if (oldIndex > currentInProgressIndex) // If they moved a character ranked lower than the character in progress when they paused it
+								{
+									PreferenceList.removeIndex(oldIndex);
+								}
+							}
+							else
+							{
+								// Just pop out the index and move on
+								PreferenceList.removeIndex(oldIndex);
+							}
+						}
+					}
+					else if (characterWasOutside)
+					{
+						if (characterIsNowInside)
+						{
+							if (currentInProgressIsInside)
+							{
+								if (newIndex <= currentInProgressIndex) // If they moved the character to a higher rank than the character in progress when they paused it
+								{
+									PreferenceList.addIndex();
+									PreferenceList.decrementCurrentInProgressRank();
+								}
+								else if (newIndex > currentInProgressIndex) // If they moved the character to a lower rank than the character in progress when they paused it
+								{
+									PreferenceList.addIndex();
+								}
+							}
+							else
+							{
+								// Add a new index to the indices array
+								PreferenceList.addIndex();
+								// moveToNext will handle the new indices array size
+								PreferenceList.moveToNext();
+							}
+						}
+						else if (characterIsNowOutside)
+						{
+							// Don't need to do anything
+						}
+					}
+				}
+			}
 		}
 	};
 	

@@ -100,6 +100,65 @@ mudaeRanker.service('PreferenceList', [function() {
 			}
 
 			return index;
+		},
+
+		// Only call the below methods when in-progress ranking has been paused
+		getIndexOfCurrentInProgress: function ()
+		{
+			if (service.currentIndex < service.indices.length) // If the current index was added to the indices
+			{
+				return service.lastCompare; // The character would have been inserted here
+			}
+			
+			return service.indices.length; // We were working on the next character outside the array
+		},
+
+		moveToNext: function () // Based on addAnswer
+		{
+			service.currentIndex = service.indices.length;
+			service.centerIndex = 0;
+			service.min = 0;
+			service.max = service.indices.length;
+		},
+		
+		removeCurrent: function ()
+		{
+			if (service.currentIndex < service.indices.length) // If the current index was added to the indices
+			{
+				service.indices.splice(service.lastCompare, 1); // Remove it from the indices
+			}
+		},
+
+		// Increment decreases and decrement increases since a lower number is a higher rank. Gotta make it confusing somehow.
+		incrementCurrentInProgressRank: function ()
+		{
+			if (service.lastCompare > 0)
+			{
+				service.lastCompare--;
+				service.max--;
+			}
+		},
+
+		decrementCurrentInProgressRank: function ()
+		{
+			if (service.lastCompare < service.indices.length)
+			{
+				service.lastCompare++;
+				service.max++;
+			}
+		},
+
+		addIndex: function ()
+		{
+			service.indices.push(-1); // Can push -1 since we're paused
+		},
+
+		removeIndex: function (index)
+		{
+			var currentInProgressIndex = service.getIndexOfCurrentInProgress();
+
+			service.currentIndex = -1; // Force an update of the currentIndex when we come back in since the array size will have changed
+			service.indices.splice(index, 1);
 		}
 	};
 	
