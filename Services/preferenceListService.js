@@ -20,6 +20,27 @@ mudaeRanker.service('PreferenceList', [function() {
 			service.lastCompare = 0;
 		},
 
+		getState: function ()
+		{
+			return { indices: service.indices, 
+				currentIndex: service.currentIndex, 
+				centerIndex: service.centerIndex, 
+				min: service.min, 
+				max: service.max, 
+				lastCompare: service.lastCompare 
+			};
+		},
+
+		setState: function (state)
+		{
+			service.indices = state.indices;
+			service.currentIndex = state.currentIndex;
+			service.centerIndex = state.centerIndex;
+			service.min = state.min;
+			service.max = state.max;
+			service.lastCompare = state.lastCompare;
+		},
+
 		addAnswer: function(pref) 
 		{
 			if (pref == -1) // Left
