@@ -2,6 +2,49 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 	var service = {
 		characters: [],
 		
+		// Sortable disabling support. Why there isn't an easier way to get the reference is beyond me. Maybe I'm just missing something.
+		_sortableObject: null,
+
+		getSortableObject: function ()
+		{
+			if (service.sortableObject != null)
+			{
+				return service.sortableObject;
+			}
+
+			var sortableDiv = $('.CharacterCardContainer')[0];
+
+			for (var prop in sortableDiv)
+			{
+				if (prop.match(/Sortable\d+/))
+				{
+					service.sortableObject = sortableDiv[prop];
+				}
+			}
+
+			return service.sortableObject;
+		},
+
+		disableSortable: function ()
+		{
+			var sortable = service.getSortableObject();
+			
+			if (sortable)
+			{
+				sortable.options.disabled = true;
+			}
+		},
+
+		enableSortable: function ()
+		{
+			var sortable = service.getSortableObject();
+			
+			if (sortable)
+			{
+				sortable.options.disabled = false;
+			}
+		},
+		
 		/* Anilist request support */
 		anilistApiUrl: 'https://graphql.anilist.co',
 
@@ -32,9 +75,11 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			}`,
 		
 		anilistReqInterval: null,
-		
+
 		parseInputField: function (inputText)
 		{
+			service.getSortableObject(); // Initialize this up front
+
 			if (!inputText || inputText === '')
 			{
 				return;
@@ -515,6 +560,8 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 
 					// Reset the activeIndex to -1
 					service.activeIndex = -1;
+
+					service.enableSortable();
 				}
 			}
 		},
@@ -554,6 +601,8 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			{
 				if (index != service.activeIndex)
 				{
+					service.disableSortable();
+
 					if (service.activeIndex >= 0) // If there is a currently active character
 					{
 						// Remove the CharacterFull class from the currently active character
