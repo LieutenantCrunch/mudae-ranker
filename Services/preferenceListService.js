@@ -2,7 +2,7 @@
 mudaeRanker.service('PreferenceList', [function() {
 	var service = {
 		size: 0,
-		indices: [0],
+		indices: [{index: 0, skip: false}],
 		currentIndex: 1, 
 		centerIndex: 0, 
 		min: 0, 
@@ -12,7 +12,7 @@ mudaeRanker.service('PreferenceList', [function() {
 		resetToCount: function (count)
 		{
 			service.size = count;
-			service.indices = [0];
+			service.indices = [{index: 0, skip: false}];
 			service.currentIndex = 1;
 			service.centerIndex = 0;
 			service.min = 0;
@@ -38,7 +38,7 @@ mudaeRanker.service('PreferenceList', [function() {
 
 			if (service.min == service.max)
 			{
-				service.indices.splice(service.min, 0, service.currentIndex);
+				service.indices.splice(service.min, 0, {index: service.currentIndex, skip: false});
 				service.currentIndex = service.currentIndex < service.indices.length ? service.indices.length : service.currentIndex + 1;
 				service.centerIndex = 0;
 				service.min = 0;
@@ -55,25 +55,44 @@ mudaeRanker.service('PreferenceList', [function() {
 			else
 			{
 				// They made at least one choice, splice the character in at the last choice that was made
-				service.indices.splice(service.lastCompare, 0, service.currentIndex);
+				service.indices.splice(service.lastCompare, 0, {index: service.currentIndex, skip: false});
 			}
 		},
 
-		resume: function ()
+		resume: function (count)
 		{
+			service.size = count;
+
 			var indicesLength = service.indices.length;
-			
-			service.indices.length = 0; // Reset the indices array
-			
-			for (var i = 0; i < indicesLength; i++) // Repopulate the array to the same size but now sorted as 0...n since those are the new indices
+			var indexOfCurrentInProgress = service.getIndexOfCurrentInProgress();
+
+			for (var i = indicesLength - 1; i >= 0; i--)
 			{
-				service.indices.push(i);
+				if (service.indices[i].skip)
+				{
+					if (i == indexOfCurrentInProgress)
+					{
+						service.removeIndex(i, false);
+						service.moveToNext();
+					}
+					else if (i < indexOfCurrentInProgress)
+					{
+						service.removeIndex(i, false);
+						service.incrementCurrentInProgressRank();
+						indicesLength--;
+					}
+					else if (i > indexOfCurrentInProgress)
+					{
+						service.removeIndex(i, false);
+						indicesLength--;
+					}
+				}
 			}
 
 			if (service.currentIndex < indicesLength) // If the current index was added to the indices
 			{
 				// Then we need to pop the index out and update it to its new value
-				service.currentIndex = service.indices.splice(service.lastCompare, 1)[0];
+				service.currentIndex = service.indices.splice(service.lastCompare, 1)[0].index;
 			}
 		},
 
@@ -86,7 +105,7 @@ mudaeRanker.service('PreferenceList', [function() {
 
 			return({
 				leftCompareIndex: service.currentIndex, 
-				rightCompareIndex: service.indices[service.centerIndex]
+				rightCompareIndex: service.indices[service.centerIndex].index
 			});
 		},
 
@@ -96,10 +115,22 @@ mudaeRanker.service('PreferenceList', [function() {
 
 			for (var i = 0; i < service.indices.length; i++)
 			{
-				index.push(service.indices[i]);
+				index.push(service.indices[i].index);
 			}
 
 			return index;
+		},
+
+		sortIndices: function ()
+		{
+			var indicesLength = service.indices.length;
+
+			service.indices.length = 0; // Reset the indices array
+
+			for (var i = 0; i < indicesLength; i++) // Repopulate the array to the same size but now sorted as 0...n since those are the new indices
+			{
+				service.indices.push({index: i, skip: false});
+			}
 		},
 
 		// Only call the below methods when in-progress ranking has been paused
@@ -120,12 +151,53 @@ mudaeRanker.service('PreferenceList', [function() {
 			service.min = 0;
 			service.max = service.indices.length;
 		},
-		
-		removeCurrent: function ()
+
+		addIndex: function (index)
 		{
+			var currentInProgressIndex = service.indices.length;
+
 			if (service.currentIndex < service.indices.length) // If the current index was added to the indices
 			{
-				service.indices.splice(service.lastCompare, 1); // Remove it from the indices
+				currentInProgressIndex = service.lastCompare; // The character would have been inserted here
+			}
+
+			service.indices.splice(index, 0, {index: -1, skip: false}); // Can push -1 since we're paused
+			
+			// Shift everything after it up one index
+			var indicesLength = service.indices.length;
+
+			for (var i = index; i < indicesLength; i++)
+			{
+				service.indices[i].index++;
+			}
+		},
+
+		removeIndex: function (index, isPermanent)
+		{
+			var currentInProgressIndex = service.indices.length;
+
+			if (service.currentIndex < service.indices.length) // If the current index was added to the indices
+			{
+				currentInProgressIndex = service.lastCompare; // The character would have been inserted here
+			}
+			
+			service.indices.splice(index, 1);
+			if (index != currentInProgressIndex)
+			{
+				service.currentIndex = -1; // Force an update of the currentIndex when we come back in since the array size will have changed
+			}
+
+			// Shift everything after it down one index
+			var indicesLength = service.indices.length;
+
+			for (var i = index; i < indicesLength; i++)
+			{
+				service.indices[i].index--;
+			}
+			
+			if (isPermanent)
+			{
+				service.size--;
 			}
 		},
 
@@ -148,17 +220,9 @@ mudaeRanker.service('PreferenceList', [function() {
 			}
 		},
 
-		addIndex: function ()
+		markForSkip: function (index, isSkip)
 		{
-			service.indices.push(-1); // Can push -1 since we're paused
-		},
-
-		removeIndex: function (index)
-		{
-			var currentInProgressIndex = service.getIndexOfCurrentInProgress();
-
-			service.currentIndex = -1; // Force an update of the currentIndex when we come back in since the array size will have changed
-			service.indices.splice(index, 1);
+			service.indices[index].skip = isSkip;
 		}
 	};
 	
