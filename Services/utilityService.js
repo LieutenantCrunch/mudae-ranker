@@ -86,6 +86,16 @@ mudaeRanker.service('Utilities', ['$rootScope', '$timeout', function($rootScope,
 
 				$timeout(function () { outputField.className = outputField.className.replace(' FlashWarning', ''); }, 1500, false);
 			}
+		},
+		
+		confirm: function (message, title)
+		{
+			return $.MessageBox({buttonDone: 'Yes', 
+				buttonFail: 'No', 
+				buttonsOrder: 'done fail', 
+				message: message,
+				title: title
+			});
 		}
 	};
 	

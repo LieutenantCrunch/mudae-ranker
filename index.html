@@ -35,6 +35,9 @@
 	<script src="Directives/mudrNewThumb.js"></script>
 	<script src="Directives/mudrParseInput.js"></script>
 	<script src="Directives/mudrReset.js"></script>
+	<script src="Directives/mudrRankingResume.js"></script>
+	<script src="Directives/mudrRankingStart.js"></script>
+	<script src="Directives/mudrRankingStop.js"></script>
 	<script src="Directives/mudrRightCompare.js"></script>
 	<script src="Directives/mudrRightCompareSkip.js"></script>
 	<script src="Directives/mudrRightCompareUrl.js"></script>
@@ -52,9 +55,11 @@
 	<br />
 	<div style="text-align: center">
 		<button data-mudr-parse-input>Parse Input</button>
-		<button data-mudr-toggle-mode>{{ getNextModeName() }}</button>
-		<button data-mudr-export-json>Export All Characters</button>
-		<button data-mudr-export-sort>Generate Sort Commands</button>
+		<!--<button data-mudr-toggle-mode>{{ getNextModeName() }}</button>-->
+		<button data-mudr-ranking-start data-ng-disabled="!hasCharacters()">Start Ranking</button>
+		<button data-mudr-ranking-resume data-ng-disabled="!hasCharacters() || !getRankingInProgress()">Resume Ranking</button>
+		<button data-mudr-export-json data-ng-disabled="!hasCharacters()">Export All Characters</button>
+		<button data-mudr-export-sort data-ng-disabled="!hasCharacters()">Generate Sort Commands</button>
 		<button data-mudr-export-clean>Clean Output</button>
 		<button data-mudr-reset>Reset</button>
 	</div>
@@ -65,7 +70,7 @@
 		<div class="CharacterNew">&#127381;</div>
 	</div>
 
-	<div class="CharacterCardContainer" data-ng-sortable>
+	<div class="CharacterCardContainer" data-ng-sortable="sortableConfig">
 		<div data-ng-repeat="c in characters" data-ng-style="{'background-color': c.skip ? 'rgba(255,0,0,.9)' : ''}" data-ng-attr-class="{{ c.className }}" data-ng-attr-title="{{ c.series + ': ' + c.name}}" data-mudr-card-click data-character-index="{{ $index }}">
 			<div class="CharacterName">
 				<span class="CharacterNameText">{{ c.name }}</span><span class="CharacterClose" title="Close Card" data-mudr-card-close>&#10062;</span>
@@ -98,7 +103,7 @@
 
 	<div id="RankingBlocker" class="RankingBlocker"></div>
 	<div id="RankingContainer" class="RankingContainer">
-		<div class="RankingContainerTitle">Which one is better?</div>
+		<div class="RankingContainerTitle">Which one is better? <span class="RankingContainerClose" data-mudr-ranking-stop>&#10062;</span></div>
 		<div id="RankingCardContainer" class="RankingCardContainer">
 			<div class="CharacterThumb CharacterFull" data-ng-attr-title="{{ getLeftCompare().series + ': ' + getLeftCompare().name}}" data-mudr-left-compare>
 				<div class="CharacterName">

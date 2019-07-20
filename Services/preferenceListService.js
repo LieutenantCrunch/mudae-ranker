@@ -2,45 +2,110 @@
 mudaeRanker.service('PreferenceList', [function() {
 	var service = {
 		size: 0,
-		indices: [0],
-		current: {index: 1, centerIndex: 0, min: 0, max: 1},
+		indices: [{index: 0, skip: false}],
+		currentIndex: 1, 
+		centerIndex: 0, 
+		min: 0, 
+		max: 1,
+		lastCompare: 0,
 
 		resetToCount: function (count)
 		{
 			service.size = count;
-			service.indices = [0];
-			service.current = {index: 1, centerIndex: 0, min: 0, max: 1};
+			service.indices = [{index: 0, skip: false}];
+			service.currentIndex = 1;
+			service.centerIndex = 0;
+			service.min = 0;
+			service.max = 1;
+			service.lastCompare = 0;
 		},
 
 		addAnswer: function(pref) 
 		{
 			if (pref == -1) // Left
-				service.current.max = service.current.centerIndex;
+			{
+				service.max = service.lastCompare = service.centerIndex;
+			}
 			else if (pref == 1) // Right
-				service.current.min = service.current.centerIndex + 1;
+			{
+				service.min = service.lastCompare = service.centerIndex + 1;
+			}
 			else // Skip
 			{
 				service.size--;
 				return;
 			}
 
-			if (service.current.min == service.current.max)
+			if (service.min == service.max)
 			{
-				service.indices.splice(service.current.min, 0, service.current.index);
-				service.current = {index: ++service.current.index, centerIndex: 0, min: 0, max: service.indices.length};
+				service.indices.splice(service.min, 0, {index: service.currentIndex, skip: false});
+				service.currentIndex = service.currentIndex < service.indices.length ? service.indices.length : service.currentIndex + 1;
+				service.centerIndex = 0;
+				service.min = 0;
+				service.max = service.indices.length;
+			}
+		},
+
+		pause: function ()
+		{
+			if (service.max == service.indices.length && service.min == 0) // They haven't made a choice on the current character
+			{
+				// Leave the indices as they are, there's no reason to add the current character in
+			}
+			else
+			{
+				// They made at least one choice, splice the character in at the last choice that was made
+				service.indices.splice(service.lastCompare, 0, {index: service.currentIndex, skip: false});
+			}
+		},
+
+		resume: function (count)
+		{
+			service.size = count;
+
+			var indicesLength = service.indices.length;
+			var indexOfCurrentInProgress = service.getIndexOfCurrentInProgress();
+
+			for (var i = indicesLength - 1; i >= 0; i--)
+			{
+				if (service.indices[i].skip)
+				{
+					if (i == indexOfCurrentInProgress)
+					{
+						service.removeIndex(i, false);
+						service.moveToNext();
+					}
+					else if (i < indexOfCurrentInProgress)
+					{
+						service.removeIndex(i, false);
+						service.incrementCurrentInProgressRank();
+						indicesLength--;
+					}
+					else if (i > indexOfCurrentInProgress)
+					{
+						service.removeIndex(i, false);
+						indicesLength--;
+					}
+				}
+			}
+
+			if (service.currentIndex < indicesLength) // If the current index was added to the indices
+			{
+				// Then we need to pop the index out and update it to its new value
+				service.currentIndex = service.indices.splice(service.lastCompare, 1)[0].index;
 			}
 		},
 
 		getQuestion: function()
 		{
-			if (service.current.index >= service.size) // If we've gone past the end of the array, stop
+			if (service.currentIndex >= service.size) // If we've gone past the end of the array, stop
 				return null;
 				
-			service.current.centerIndex = Math.floor((service.current.min + service.current.max) / 2); // Calculate the center index
+			service.centerIndex = Math.floor((service.min + service.max) / 2); // Calculate the center index
 
 			return({
-				leftCompareIndex: service.current.index, 
-				rightCompareIndex: service.indices[service.current.centerIndex]
+				leftCompareIndex: service.currentIndex, 
+				rightCompareIndex: service.indices[service.centerIndex].index
 			});
 		},
 
@@ -50,10 +115,114 @@ mudaeRanker.service('PreferenceList', [function() {
 
 			for (var i = 0; i < service.indices.length; i++)
 			{
-				index.push(service.indices[i]);
+				index.push(service.indices[i].index);
 			}
 
-			return(index);
+			return index;
+		},
+
+		sortIndices: function ()
+		{
+			var indicesLength = service.indices.length;
+
+			service.indices.length = 0; // Reset the indices array
+
+			for (var i = 0; i < indicesLength; i++) // Repopulate the array to the same size but now sorted as 0...n since those are the new indices
+			{
+				service.indices.push({index: i, skip: false});
+			}
+		},
+
+		// Only call the below methods when in-progress ranking has been paused
+		getIndexOfCurrentInProgress: function ()
+		{
+			if (service.currentIndex < service.indices.length) // If the current index was added to the indices
+			{
+				return service.lastCompare; // The character would have been inserted here
+			}
+			
+			return service.indices.length; // We were working on the next character outside the array
+		},
+
+		moveToNext: function () // Based on addAnswer
+		{
+			service.currentIndex = service.indices.length;
+			service.centerIndex = 0;
+			service.min = 0;
+			service.max = service.indices.length;
+		},
+
+		addIndex: function (index)
+		{
+			var currentInProgressIndex = service.indices.length;
+
+			if (service.currentIndex < service.indices.length) // If the current index was added to the indices
+			{
+				currentInProgressIndex = service.lastCompare; // The character would have been inserted here
+			}
+
+			service.indices.splice(index, 0, {index: -1, skip: false}); // Can push -1 since we're paused
+			
+			// Shift everything after it up one index
+			var indicesLength = service.indices.length;
+
+			for (var i = index; i < indicesLength; i++)
+			{
+				service.indices[i].index++;
+			}
+		},
+
+		removeIndex: function (index, isPermanent)
+		{
+			var currentInProgressIndex = service.indices.length;
+
+			if (service.currentIndex < service.indices.length) // If the current index was added to the indices
+			{
+				currentInProgressIndex = service.lastCompare; // The character would have been inserted here
+			}
+			
+			service.indices.splice(index, 1);
+			if (index != currentInProgressIndex)
+			{
+				service.currentIndex = -1; // Force an update of the currentIndex when we come back in since the array size will have changed
+			}
+
+			// Shift everything after it down one index
+			var indicesLength = service.indices.length;
+
+			for (var i = index; i < indicesLength; i++)
+			{
+				service.indices[i].index--;
+			}
+			
+			if (isPermanent)
+			{
+				service.size--;
+			}
+		},
+
+		// Increment decreases and decrement increases since a lower number is a higher rank. Gotta make it confusing somehow.
+		incrementCurrentInProgressRank: function ()
+		{
+			if (service.lastCompare > 0)
+			{
+				service.lastCompare--;
+				service.max--;
+			}
+		},
+
+		decrementCurrentInProgressRank: function ()
+		{
+			if (service.lastCompare < service.indices.length)
+			{
+				service.lastCompare++;
+				service.max++;
+			}
+		},
+
+		markForSkip: function (index, isSkip)
+		{
+			service.indices[index].skip = isSkip;
 		}
 	};
 	

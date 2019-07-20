@@ -298,10 +298,10 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			switch(service.mode)
 			{
 			case Mode.Rank:
-				return 'Edit Mode';
+				return 'Start Editing';
 			case Mode.Edit:
 			default:
-				return 'Rank Mode';
+				return 'Start Ranking';
 			}
 		},
 
@@ -314,7 +314,6 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 				break;
 			case Mode.Edit:
 			default:
-				service.mode = Mode.Rank;
 				service.startRankMode();
 				break;
 			}
@@ -325,9 +324,15 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			return service.characters;
 		},
 
+		hasCharacters: function ()
+		{
+			return service.characters.length > 0 ? true : false;
+		},
+
 		clean: function ()
 		{
 			service.characters.length = 0;
+			service.rankingInProgress = false;
 			return service.characters;
 		},
 
@@ -496,13 +501,9 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 					{
 						service.inMessageBox = true;
 
-						$.MessageBox({buttonDone: 'Yes', 
-							buttonFail: 'No', 
-							buttonsOrder: 'done fail', 
-							message: 'Are you sure you want to delete this character?',
-							title: 'Confirm Deletion'
-						}).done(function (data, button) {
+						Utilities.confirm('Are you sure you want to delete this character?', 'Confirm Deletion').done(function (data, button) {
 							service.characters.splice(service.activeIndex, 1);
+							service.handleDeletedCharacter(service.activeIndex);
 
 							// Reset the activeIndex to -1
 							service.activeIndex = -1;
@@ -581,6 +582,12 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 		_currentLeftIndex: -1,
 		_currentRightIndex: -1,
 		leftCompare: null,
+		rankingInProgress: false,
+		
+		getRankingInProgress: function ()
+		{
+			return service.rankingInProgress;
+		},
 		
 		getLeftCompare: function ()
 		{
@@ -589,12 +596,16 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 		
 		selectLeft: function ()
 		{
+			service.rankingInProgress = true;
+
 			PreferenceList.addAnswer(-1);
 			service.presentCardsForComparison();
 		},
 		
 		skipLeft: function ()
 		{
+			service.rankingInProgress = true;
+
 			var skippedCharacter = service._rankedCharacters.splice(service._currentLeftIndex, 1).pop();
 
 			skippedCharacter.skip = true; // If the checkbox was actually working properly, this wouldn't really be necessary, but oh well
@@ -612,12 +623,16 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 		
 		selectRight: function ()
 		{
+			service.rankingInProgress = true;
+
 			PreferenceList.addAnswer(1);
 			service.presentCardsForComparison();
 		},
 		
 		skipRight: function ()
 		{
+			service.rankingInProgress = true;
+
 			var skippedCharacter = service._rankedCharacters.splice(service._currentRightIndex, 1).pop();
 			
 			skippedCharacter.skip = true; // If the checkbox was actually working properly, this wouldn't really be necessary, but oh well
@@ -625,41 +640,10 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			PreferenceList.addAnswer(0);
 			service.presentCardsForComparison();
 		},
-		
-		endRankMode: function ()
+
+		_initializeRankMode: function ()
 		{
-			// Make sure we have a reference to the ranking container
-			if (!service._rankingContainer)
-			{
-				service._rankingContainer = $('#RankingContainer')[0];
-			}
-
-			service._rankingContainer.style.display = '';
-			
-			var sortedIndices = PreferenceList.getOrder();
-			var total = sortedIndices.length;
-			var newCharacters = [];
-
-			for (var i = 0; i < total; i++)
-			{
-				newCharacters.push(service._rankedCharacters[sortedIndices[i]]);
-			}
-
-			newCharacters.push(...service._discardedCharacters);
-
-			service.updateAll(newCharacters);
-			service.toggleMode();
-		},
-
-		startRankMode: function()
-		{
-			// Ideally it would be nice if they could pause in the middle of ranking and come back in, buttttt we'll do that later
-			// Reset the arrays and all data
-			service._rankedCharacters.length = 0;
-			service._discardedCharacters.length = 0;
-
-			// Display the Ranking Container
-			var totalCharacters = service.characters.length;
+			service.mode = Mode.Rank;
 			
 			// Make sure we have a reference to the ranking container
 			if (!service._rankingContainer)
@@ -674,6 +658,18 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			{
 				service._rankingCardContainer = $('#RankingCardContainer')[0];
 			}
+		},
+
+		startRankMode: function()
+		{
+			// Display the Ranking Container
+			service._initializeRankMode();
+
+			// Reset the arrays and all data
+			service._rankedCharacters.length = 0;
+			service._discardedCharacters.length = 0;
+
+			var totalCharacters = service.characters.length;
 
 			// Populate the arrays we'll be sorting and discarding
 			for (var i = 0; i < totalCharacters; i++)
@@ -693,7 +689,93 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			PreferenceList.resetToCount(service._rankedCharacters.length);
 			service.presentCardsForComparison();
 		},
-		
+
+		pauseRankMode: function ()
+		{
+			service._rankingContainer.style.display = '';
+
+			if (service.rankingInProgress)
+			{
+				PreferenceList.pause();
+
+				var sortedIndices = PreferenceList.getOrder();
+				PreferenceList.sortIndices(); // "Sort" them so if the user messes around with skip we can set the flag on the correct index
+
+				var total = sortedIndices.length;
+				var newCharacters = [];
+
+				for (var i = 0; i < total; i++)
+				{
+					newCharacters.push(service._rankedCharacters[sortedIndices[i]]);
+				}
+
+				// Splice out the characters that were sorted, then add the remaining non-ranked after that
+				sortedIndices.sort();
+
+				for (var i = total - 1; i >= 0; i--)
+				{
+					service._rankedCharacters.splice(sortedIndices[i], 1);
+				}
+
+				newCharacters.push(...service._rankedCharacters);
+				newCharacters.push(...service._discardedCharacters);
+
+				service.updateAll(newCharacters);
+			}
+
+			service.toggleMode();
+		},
+
+		resumeRankMode: function ()
+		{
+			service._initializeRankMode();
+
+			// Reset the arrays and all data again
+			service._rankedCharacters.length = 0;
+			service._discardedCharacters.length = 0;
+			
+			var totalCharacters = service.characters.length;
+
+			// Populate the arrays we'll be sorting and discarding
+			for (var i = 0; i < totalCharacters; i++)
+			{
+				var character = service.characters[i];
+				
+				if (character.skip)
+				{
+					service._discardedCharacters.push(character);
+				}
+				else
+				{
+					service._rankedCharacters.push(character);
+				}
+			}
+
+			PreferenceList.resume(service._rankedCharacters.length);
+			service.presentCardsForComparison();
+		},
+
+		endRankMode: function ()
+		{
+			service._rankingContainer.style.display = '';
+			
+			var sortedIndices = PreferenceList.getOrder();
+			var total = sortedIndices.length;
+			var newCharacters = [];
+
+			for (var i = 0; i < total; i++)
+			{
+				newCharacters.push(service._rankedCharacters[sortedIndices[i]]);
+			}
+
+			newCharacters.push(...service._discardedCharacters);
+
+			service.updateAll(newCharacters);
+			service.toggleMode();
+
+			service.rankingInProgress = false;
+		},
+
 		presentCardsForComparison: function ()
 		{
 			var displayCards = PreferenceList.getQuestion();
@@ -709,6 +791,167 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			else
 			{
 				service.endRankMode(); // Or do something else?
+			}
+		},
+
+		dragAndDropSortEnd: function (event)
+		{
+			if (service.rankingInProgress)
+			{
+				var oldIndex = event.oldIndex;
+				var newIndex = event.newIndex;
+				var sortedTotal = PreferenceList.indices.length;
+				var currentInProgressIndex = PreferenceList.getIndexOfCurrentInProgress();
+
+				// The PreferenceList service needs to be updated if the character was outside the range of the PreferenceList's indices and is now inside or if the character was inside the indices
+				var characterWasOutside = (oldIndex >= sortedTotal);
+				var characterWasInside = (oldIndex < sortedTotal);
+				var characterIsNowOutside = (newIndex >= sortedTotal);
+				var characterIsNowInside = (newIndex < sortedTotal);
+				var currentInProgressIsInside = (currentInProgressIndex < sortedTotal);
+				
+				var preferenceListNeedsUpdate = (characterWasOutside && characterIsNowInside || characterWasInside);
+
+				if (preferenceListNeedsUpdate)
+				{
+					if (characterWasInside)
+					{
+						if (characterIsNowInside)
+						{
+							if (currentInProgressIsInside)
+							{
+								if (oldIndex == currentInProgressIndex) // If they moved the character that was in progress when they paused it
+								{
+									// Accept their decision and move on to the next character
+									PreferenceList.moveToNext();
+								}
+								else if (oldIndex < currentInProgressIndex) // If they moved a character ranked higher than the character in progress when they paused it
+								{
+									if (newIndex < currentInProgressIndex) // If the moved character is still ranked higher than the in progress character
+									{
+										// Don't need to do anything
+									}
+									else if (newIndex >= currentInProgressIndex) // If the moved character is now ranked lower than the in progress character
+									{
+										PreferenceList.incrementCurrentInProgressRank();
+									}
+								}
+								else if (oldIndex > currentInProgressIndex) // If they moved a character ranked lower than the character in progress when they paused it
+								{
+									if (newIndex <= currentInProgressIndex) // If the moved character is now ranked higher than the in progress character
+									{
+										PreferenceList.decrementCurrentInProgressRank();
+									}
+									else if (newIndex > currentInProgressIndex) // If the moved character is still ranked lower than the in progress character
+									{
+										// Don't need to do anything
+									}
+								}
+							}
+							else
+							{
+								// Don't need to do anything
+							}
+						}
+						else if (characterIsNowOutside)
+						{
+							if (currentInProgressIsInside)
+							{
+								if (oldIndex == currentInProgressIndex) // If they moved the character that was in progress when they paused it
+								{
+									// Take it out and move on to the next character
+									PreferenceList.removeIndex(oldIndex, false);
+									PreferenceList.moveToNext();
+								}
+								else if (oldIndex < currentInProgressIndex) // If they moved a character ranked higher than the character in progress when they paused it
+								{
+									PreferenceList.removeIndex(oldIndex, false);
+									PreferenceList.incrementCurrentInProgressRank();
+								}
+								else if (oldIndex > currentInProgressIndex) // If they moved a character ranked lower than the character in progress when they paused it
+								{
+									PreferenceList.removeIndex(oldIndex, false);
+								}
+							}
+							else
+							{
+								// Just pop out the index and move on
+								PreferenceList.removeIndex(oldIndex, false);
+							}
+						}
+					}
+					else if (characterWasOutside)
+					{
+						if (characterIsNowInside)
+						{
+							if (currentInProgressIsInside)
+							{
+								if (newIndex <= currentInProgressIndex) // If they moved the character to a higher rank than the character in progress when they paused it
+								{
+									PreferenceList.addIndex(newIndex);
+									PreferenceList.decrementCurrentInProgressRank();
+								}
+								else if (newIndex > currentInProgressIndex) // If they moved the character to a lower rank than the character in progress when they paused it
+								{
+									PreferenceList.addIndex(newIndex);
+								}
+							}
+							else
+							{
+								// Add a new index to the indices array
+								PreferenceList.addIndex();
+								// moveToNext will handle the new indices array size
+								PreferenceList.moveToNext();
+							}
+						}
+						else if (characterIsNowOutside)
+						{
+							// Don't need to do anything
+						}
+					}
+				}
+			}
+		},
+
+		handleSkippedCharacter: function (skipIndex)
+		{
+			if (service.mode === Mode.Edit && service.rankingInProgress)
+			{
+				// This happens before the check reaches the character, so the character's skip attribute will be the inverse of what it's about to be
+				var isSkipping = !(service.characters.skip);
+				var sortedTotal = PreferenceList.indices.length;
+
+				var characterWasOutside = (skipIndex >= sortedTotal);
+				var characterWasInside = (skipIndex < sortedTotal);
+
+				if (characterWasOutside)
+				{
+					// Don't need to do anything special
+				}
+				else if (characterWasInside)
+				{
+					PreferenceList.markForSkip(skipIndex, isSkipping);
+				}
+			}
+		},
+
+		handleDeletedCharacter: function (deleteIndex)
+		{
+			if (service.mode === Mode.Edit && service.rankingInProgress)
+			{
+				var sortedTotal = PreferenceList.indices.length;
+
+				var characterWasOutside = (deleteIndex >= sortedTotal);
+				var characterWasInside = (deleteIndex < sortedTotal);
+
+				if (characterWasOutside)
+				{
+					// Don't need to do anything special
+				}
+				else if (characterWasInside)
+				{
+					PreferenceList.removeIndex(deleteIndex, true);
+				}
 			}
 		}
 	};

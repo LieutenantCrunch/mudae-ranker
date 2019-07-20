@@ -4,7 +4,11 @@ mudaeRanker.directive('mudrSkipInput', ['Characters', function(Characters) {
 		scope: false,
 		link: function(scope, element, attrs) {
 			element.on('click', function(event) {
-				event.stopPropagation();
+				if (event.target.tagName === 'INPUT')
+				{
+					Characters.handleSkippedCharacter(scope.$index);
+					event.stopPropagation();
+				}
 			});
 		}
 	}
