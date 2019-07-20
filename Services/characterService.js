@@ -51,16 +51,37 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			
 			if (jsonInput)
 			{
-				if (mergeCharacters)
+				try
 				{
-					service.mergeAll(jsonInput);
+					if (mergeCharacters)
+					{
+						service.mergeAll(jsonInput.characters);
+					}
+					else
+					{
+						if (jsonInput.appState)
+						{
+							service.rankingInProgress = jsonInput.appState.rankingInProgress;
+							PreferenceList.setState(jsonInput.appState.preferenceState);
+						}
+						
+						if (jsonInput.characters)
+						{
+							service.updateAll(jsonInput.characters);
+						}
+						else
+						{
+							service.updateAll(jsonInput);
+						}
+					}
+					
+					Utilities.showSuccess('Done processing the input', true);
 				}
-				else
+				catch(e)
 				{
-					service.updateAll(jsonInput);
+					Utilities.showError('Well, you screwed something up: ' + e.Message, true);
 				}
-
-				Utilities.showSuccess('Done processing the input', true);
+				
 				return;
 			}
 
@@ -435,7 +456,15 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 		
 		exportJson: function ()
 		{
-			Utilities.showSuccess(angular.toJson(service.characters), false);
+			var exportData = {
+				appState: {
+					rankingInProgress: service.rankingInProgress,
+					preferenceState: PreferenceList.getState()
+				}, 
+				characters: service.characters 
+			};
+
+			Utilities.showSuccess(angular.toJson(exportData), false);
 		},
 
 		exportSort: function ()
@@ -538,41 +567,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 					// Update the activeIndex to the character being sent in
 					service.activeIndex = index;
 				}
-				/*
-				This was removed once the close button was added
-				else // If the character being sent in is the currently active character
-				{
-					// Remove the CharacterFull class from the currently active character
-					var aClass = service.characters[index].className;
-					service.characters[index].className = aClass.replace(/(?: )?CharacterFull( )?/,'$1');
-
-					// Reset the activeIndex to -1
-					service.activeIndex = -1;
-				}
-				*/
 			}
-			// This was removed once the left/right placeholder cards were added to the Ranking Container
-			/*else if (service.mode === Mode.Rank)
-			{
-				var answer = (index === service._currentLeftIndex ? -1 : 1);
-
-				PreferenceList.addAnswer(answer);
-
-				while (service._rankingCardContainer.hasChildNodes()) {
-					angular.element(service._rankingCardContainer.lastChild).remove();
-				}
-
-				var displayCards = PreferenceList.getQuestion();
-
-				if (displayCards)
-				{
-					service.presentCardsForComparison(displayCards.leftCompareIndex, displayCards.rightCompareIndex);
-				}
-				else
-				{
-					service.endRankMode();
-				}
-			}*/
 		},
 
 		_rankedCharacters: [],
