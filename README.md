@@ -30,14 +30,29 @@ This will walk you through importing your first batch of characters, sorting the
 3. Paste the copied information into the input field
 4. Click **Parse Input**
    - At this point, you should see a bunch of thumbnails pop up and the images should start loading from the end
-   - All character images are initially looked up from [Anilist](https://anilist.co/), see the Anilist section below for some details related to character lookups.
-5. Once the images are finished showing up, you can click on any thumbnail to view the full information for that character, and you can also change or set an image for the character if you'd like.
-6. At any point, you can click **Export All Characters** to export a dump of the characters that can be re-imported later. This is highly recommended as it will save all of the image paths for each character, meaning the next time you import, it will not have to look the characters up from Anilist and will be much faster.
-7. When you're ready, click **Rank Mode**.
-8. The ranking pop up will show you two characters. Click on the one that you prefer. Keep doing this until the ranking popup goes away.
-9. Your harem should now be sorted based on your preferences.
+   - All character images are initially looked up from [Anilist](https://anilist.co/), see the **Anilist** section below for some details related to character lookups.
+5. Once the images are finished showing up, you can click on any thumbnail to view the full card for that character. See the **Character Card** section below for details on what is available on the card.
+   - You can also drag individual characters around to resort them manually
+6. At any point, you can click **Export All Characters** to export a dump of the characters that can be re-imported later. This is highly recommended as it will save all of the image paths for each character, meaning the next time you import, it will not have to look the characters up from Anilist and will be much faster. I recommend saving the dump to a text file with Unicode encoding.
+7. When you're ready, click **Start Ranking**.
+8. The ranking pop up will show you two characters. Click on the one that you prefer.
+   - Note that you can also click the "Skip" button for a character, this will remove the character from the ranking process and throw them at the end of the list. If you want to bring them back, you will have to stop ranking and turn skip back off for them (see **Character Card**)
+   - To stop ranking midway, simply click the ❎ in the popup. The **Resume Ranking** button will enable, allowing you to pick back up from where you left off (see **Important Notes** below).
+9. After you have ranked all characters, the popup will go away and your harem should now be sorted based on your preferences.
    - It's highly recommended that you click **Export All Characters** at this point so you can import them in the same order they're in now that you've sorted them.
 10. Now you can click **Generate Sort Commands** and the list of commands you need to run to sort your harem on Discord will be shown.
+
+## Character Card
+Full character cards have the following information and controls:
+- Information
+  - The character's name as shown in Mudae
+  - The series the character is from as show in Mudae
+  - A picture of the character
+  - The url of the picture shown
+- Controls
+  - ❎ - Close the card
+  - "Skip?" - If you check this, the card will turn red and the character will not be included in the ranking process. Usually you will do this for characters you have simply for trading or cleaning purposes.
+  - 🗑️ - Delete the character. This will remove them from the list of characters and you will either have to add them back in with the 🆕 button (see **Adding New Characters**), with a merge (see **Merging Instructions**), or by starting over with your last $mmas dump or Mudae Ranker export.
 
 ## Merging Instructions
 Claimed a bunch of characters and didn't keep your Mudae Ranker data up-to-date? Shame shame. But hey, that's what merging is for.
@@ -61,3 +76,18 @@ You may wonder why not all characters have images, why the images are different 
 - Anilist breaks down series a bit differently from Mudae. For example, Mudae lists Sinon as being from "Sword Art Online", but Anilist lists her as being from "Sword Art Online II", so her image lookup fails.
 - Sometimes Anilist spells characters differently from Mudae. For example, Anilist might have "Lelei la Lelena" instead of "Lelei la Lalena", "Kisara Tendo" instead of "Kisara Tendou", or "Asuna Yuuki" instead of "Asuna". This app tries to handle most of the differences, but it can't catch every case. If you see a case that you think would be easy to handle, feel free to submit an Issue **with** the algorithm to resolve the difference.
 - Finally, some series aren't on Anilist, especially when it comes to games, so images will not be returned for those.
+
+## Important Notes
+- Make sure you don't save your exports with ANSI encoding, it's entirely possible they could have special characters that will get lost if you save with the wrong encoding, and that would cause bad things.
+- Stopping ranking midway triggers the most complicated state of this app. If any bugs are going to show up, this is where I expect them to show. If you like to read (there will be no tl;dr), here's an attempted explanation of what's going on behind the scenes and what you can expect:
+  - You can think of your characters as being split up into two different lists, the ranked characters and the unranked characters.
+  - Ranked characters ones that you specifically made a decision on by clicking on them in the ranking popup, whereas unranked are all the rest
+  - When you stop ranking, all of the ranked characters are going to be placed at the front of the list
+  - Since you'll be back in "edit mode", you'll be able to drag characters around, mark them as skip, and delete them. I'll refer to these three operations as re-sorting the character.
+  - If you re-sort unranked characters and all of your re-sorts are purely outside of the ranked characters, everything is fairly safe.
+  - If you re-sort unranked characters into the middle of ranked characters, re-sort ranked characters within themselves, or re-sort ranked characters out into the unranked characters, this is where it gets complicated.
+  - At any given time as you rank characters, there is one particular character that the app is trying to get you to rank. If you made at least one decision on that character, they become the special "in-progress" character.
+  - If you drag and drop the in-progress character within the ranked characters, the app will accept your decision as deliberate and will move on to the next character once you resume ranking.
+  - If you move an unranked character into the ranked characters, it will become a ranked character, the app will accept your decision as deliberate and will either continue with the in-progress character or will grab the next character for ranking once you resume ranking.
+  - If you move a ranked character into the unranked characters, it will become an unranked character and you will be shown that character again later on.
+- If you have your harem sorted before you go into this app and you're worried about something getting messed up, I recommend importing from $mmas and then immediately using the Export All Characters button to get your save dump followed by the Generate Sort Commands button to get your sort commands.
