@@ -73,7 +73,7 @@
 	<div class="CharacterCardContainer" data-ng-sortable="sortableConfig">
 		<div data-ng-repeat="c in characters" data-ng-style="{'background-color': c.skip ? 'rgba(255,0,0,.9)' : ''}" data-ng-attr-class="{{ c.className }}" data-ng-attr-title="{{ c.series + ': ' + c.name}}" data-mudr-card-click data-character-index="{{ $index }}">
 			<div class="CharacterName">
-				<span class="CharacterNameText">{{ c.name }}</span><span class="CharacterClose" title="Close Card" data-mudr-card-close>&#10062;</span>
+				<span class="CharacterNameText">{{ c.originalName }}</span><span class="CharacterClose" title="Close Card" data-mudr-card-close>&#10062;</span>
 			</div>
 			<div class="CharacterSeries">{{ c.series }}</div>
 			<img data-ng-src="{{ c.imageUrl }}" />
