@@ -1,3 +1,5 @@
+# Please note: This is not working 100% yet
+
 # Mudae Ranker
  Preference-based Mudae harem ranking app
 
