@@ -1,5 +1,5 @@
 // Based on code from: https://stackoverflow.com/questions/31298996/sorting-a-set-of-objects-by-a-users-preference
-mudaeRanker.service('PreferenceList', [function() {
+mudaeRanker.service('PreferenceList', ['RankChoice', function(RankChoice) {
 	var service = {
 		size: 0,
 		indices: [{index: 0, skip: false}],
@@ -43,11 +43,11 @@ mudaeRanker.service('PreferenceList', [function() {
 
 		addAnswer: function(pref) 
 		{
-			if (pref == -1) // Left
+			if (pref === RankChoice.Left) // Left
 			{
 				service.max = service.lastCompare = service.centerIndex;
 			}
-			else if (pref == 1) // Right
+			else if (pref === RankChoice.Right) // Right
 			{
 				service.min = service.lastCompare = service.centerIndex + 1;
 			}
@@ -57,7 +57,7 @@ mudaeRanker.service('PreferenceList', [function() {
 				return;
 			}
 
-			if (service.min == service.max)
+			if (service.min === service.max)
 			{
 				service.indices.splice(service.min, 0, {index: service.currentIndex, skip: false});
 				service.currentIndex = service.currentIndex < service.indices.length ? service.indices.length : service.currentIndex + 1;
@@ -69,11 +69,7 @@ mudaeRanker.service('PreferenceList', [function() {
 
 		pause: function ()
 		{
-			if (service.max == service.indices.length && service.min == 0) // They haven't made a choice on the current character
-			{
-				// Leave the indices as they are, there's no reason to add the current character in
-			}
-			else
+			if (service.max !== service.indices.length || service.min !== 0) // They made a choice on the current character
 			{
 				// They made at least one choice, splice the character in at the last choice that was made
 				service.indices.splice(service.lastCompare, 0, {index: service.currentIndex, skip: false});
@@ -91,20 +87,19 @@ mudaeRanker.service('PreferenceList', [function() {
 			{
 				if (service.indices[i].skip)
 				{
-					if (i == indexOfCurrentInProgress)
+					service.removeIndex(i, false);
+
+					if (i === indexOfCurrentInProgress)
 					{
-						service.removeIndex(i, false);
 						service.moveToNext();
 					}
 					else if (i < indexOfCurrentInProgress)
 					{
-						service.removeIndex(i, false);
 						service.incrementCurrentInProgressRank();
 						indicesLength--;
 					}
 					else if (i > indexOfCurrentInProgress)
 					{
-						service.removeIndex(i, false);
 						indicesLength--;
 					}
 				}
