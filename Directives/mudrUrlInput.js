@@ -4,12 +4,6 @@ mudaeRanker.directive('mudrUrlInput', ['Characters', function(Characters) {
 		scope: false,
 		link: function(scope, element, attrs) {
 			element.on('keyup', function(event) {
-				/*if (event.keyCode == 13)
-				{
-					event.preventDefault();
-					Characters.updateCharacterImage(scope.$index, element.val());
-				}*/
-
 				event.stopPropagation();
 			});
 

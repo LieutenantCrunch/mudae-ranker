@@ -130,10 +130,13 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 				return;
 			}
 
-			 // Remove double newlines
+			// Remove double newlines
 			var initialText = inputText.replace(/\n\n/g,'\n');
+			
+			// Remove zero-width spaces
+			initialText = initialText.replace(/\u200b/g,'');
 
-			 // Get rid of timestamps
+			// Get rid of timestamps
 			initialText = initialText.replace(/\[([1-9]|1[12]):([0-5][0-9]) [AP]M\] BOTMuda(e|maid)( \d+)?: /gi, '');
 			initialText = initialText.replace(/Muda(e|maid \d+)BOTToday at ([1-9]|1[12]):([0-5][0-9]) [AP]M/gi, '');
 
@@ -285,7 +288,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 						var characterFound = false;
 
 						if (localCharacterName === characterNameUS || localCharacterName === characterNameJP || 
-							localCharacterName == characterFirstName || localCharacterName == characterLastName)
+							localCharacterName === characterFirstName || localCharacterName === characterLastName)
 						{
 							characterFound = true;
 						}
@@ -329,7 +332,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 					}
 				}
 
-				if (seriesArray.length == 0)
+				if (seriesArray.length === 0)
 				{
 					$interval.cancel(service.anilistReqInterval);
 				}
@@ -344,7 +347,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 
 		/* End Anilist Request Support */
 
-		activeIndex: -1,
+		/* Start Mode Support */
 		mode: Mode.Edit,
 		
 		getModeClassName: function ()
@@ -385,6 +388,63 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			}
 		},
 
+		/* End Mode Support */
+
+		/* Start Export support */
+		exportJson: function ()
+		{
+			var exportData = {
+				appState: {
+					rankingInProgress: service.rankingInProgress,
+					preferenceState: PreferenceList.getState()
+				}, 
+				characters: service.characters 
+			};
+
+			Utilities.showSuccess(angular.toJson(exportData), false);
+		},
+
+		exportSort: function ()
+		{
+			var chars = service.characters;
+			var total = chars.length;
+			
+			if (chars[0]['originalName'] === undefined)
+			{
+				Utilities.showError('Looks like your characters don\'t have their original names stored. Run another $mmas and Parse Input so it can merge in the proper information, and then try again.', true);
+				return;
+			}
+
+			if (total > 0)
+			{
+				var output = '$firstmarry ' + chars[0].originalName + '\n';
+				
+				if (total > 1)
+				{
+					output += '$sortmarry pos ' + chars[0].originalName
+
+					for (var i = 1; i < total; i++)
+					{
+						if (i % 20 === 0)
+						{
+							output += '\n$sortmarry pos ' + chars[i-1].originalName + '$' + chars[i].originalName;
+						}
+						else
+						{
+							output += '$' + chars[i].originalName;
+						}
+					}
+				}
+
+				Utilities.showSuccess(output, false);
+			}
+		},
+
+		/* End Export support */
+
+		activeIndex: -1,
+		inMessageBox: false, // I don't like this, but oh well
+
 		getCharacters: function ()
 		{
 			return service.characters;
@@ -392,7 +452,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 
 		hasCharacters: function ()
 		{
-			return service.characters.length > 0 ? true : false;
+			return service.characters.length > 0;
 		},
 
 		clean: function ()
@@ -480,74 +540,6 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			$rootScope.$apply();
 		},
 
-		// Unused
-		removeCharacter: function (name, series)
-		{
-			var totalCharacters = service.characters.length;
-			var characterRemoved = false;
-			var minimizedName = Utilities.minimizeName(name)
-
-			for (var i = 0; i < totalCharacters; i++)
-			{
-				var aCharacter = service.characters[i];
-				if (aCharacter.minimizedName == minimizedName && aCharacter.series == series)
-				{
-					service.characters.splice(i, 1);
-					characterRemoved = true;
-					break;
-				}
-			}
-		},
-		
-		exportJson: function ()
-		{
-			var exportData = {
-				appState: {
-					rankingInProgress: service.rankingInProgress,
-					preferenceState: PreferenceList.getState()
-				}, 
-				characters: service.characters 
-			};
-
-			Utilities.showSuccess(angular.toJson(exportData), false);
-		},
-
-		exportSort: function ()
-		{
-			var chars = service.characters;
-			var total = chars.length;
-			
-			if (chars[0]['originalName'] === undefined)
-			{
-				Utilities.showError('Looks like your characters don\'t have their original names stored. Run another $mmas and Parse Input so it can merge in the proper information, and then try again.', true);
-				return;
-			}
-
-			if (total > 0)
-			{
-				var output = '$firstmarry ' + chars[0].originalName + '\n';
-				
-				if (total > 1)
-				{
-					output += '$sortmarry pos ' + chars[0].originalName
-
-					for (var i = 1; i < total; i++)
-					{
-						if (i % 20 === 0)
-						{
-							output += '\n$sortmarry pos ' + chars[i-1].originalName + '$' + chars[i].originalName;
-						}
-						else
-						{
-							output += '$' + chars[i].originalName;
-						}
-					}
-				}
-
-				Utilities.showSuccess(output, false);
-			}
-		},
-
 		minimizeActiveCard: function ()
 		{
 			if (service.mode === Mode.Edit)
@@ -565,8 +557,6 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 				}
 			}
 		},
-
-		inMessageBox: false, // I don't like this, but oh well
 
 		deleteActiveCard: function ()
 		{
@@ -644,6 +634,8 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 
 			PreferenceList.addAnswer(-1);
 			service.presentCardsForComparison();
+
+			//console.log(service.getDebugInfo(true));
 		},
 		
 		skipLeft: function ()
@@ -671,6 +663,8 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 
 			PreferenceList.addAnswer(1);
 			service.presentCardsForComparison();
+
+			//console.log(service.getDebugInfo(true));
 		},
 		
 		skipRight: function ()
@@ -754,7 +748,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 				}
 
 				// Splice out the characters that were sorted, then add the remaining non-ranked after that
-				sortedIndices.sort();
+				sortedIndices.sort((a, b) => a - b);
 
 				for (var i = total - 1; i >= 0; i--)
 				{
@@ -854,7 +848,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 				var characterIsNowInside = (newIndex < sortedTotal);
 				var currentInProgressIsInside = (currentInProgressIndex < sortedTotal);
 				
-				var preferenceListNeedsUpdate = (characterWasOutside && characterIsNowInside || characterWasInside);
+				var preferenceListNeedsUpdate = ((characterWasOutside && characterIsNowInside) || characterWasInside);
 
 				if (preferenceListNeedsUpdate)
 				{
@@ -864,18 +858,14 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 						{
 							if (currentInProgressIsInside)
 							{
-								if (oldIndex == currentInProgressIndex) // If they moved the character that was in progress when they paused it
+								if (oldIndex === currentInProgressIndex) // If they moved the character that was in progress when they paused it
 								{
 									// Accept their decision and move on to the next character
 									PreferenceList.moveToNext();
 								}
 								else if (oldIndex < currentInProgressIndex) // If they moved a character ranked higher than the character in progress when they paused it
 								{
-									if (newIndex < currentInProgressIndex) // If the moved character is still ranked higher than the in progress character
-									{
-										// Don't need to do anything
-									}
-									else if (newIndex >= currentInProgressIndex) // If the moved character is now ranked lower than the in progress character
+									if (newIndex >= currentInProgressIndex) // If the moved character is now ranked lower than the in progress character
 									{
 										PreferenceList.incrementCurrentInProgressRank();
 									}
@@ -886,41 +876,23 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 									{
 										PreferenceList.decrementCurrentInProgressRank();
 									}
-									else if (newIndex > currentInProgressIndex) // If the moved character is still ranked lower than the in progress character
-									{
-										// Don't need to do anything
-									}
 								}
-							}
-							else
-							{
-								// Don't need to do anything
 							}
 						}
 						else if (characterIsNowOutside)
 						{
+							PreferenceList.removeIndex(oldIndex, false);
+
 							if (currentInProgressIsInside)
 							{
-								if (oldIndex == currentInProgressIndex) // If they moved the character that was in progress when they paused it
+								if (oldIndex === currentInProgressIndex) // If they moved the character that was in progress when they paused it
 								{
-									// Take it out and move on to the next character
-									PreferenceList.removeIndex(oldIndex, false);
 									PreferenceList.moveToNext();
 								}
 								else if (oldIndex < currentInProgressIndex) // If they moved a character ranked higher than the character in progress when they paused it
 								{
-									PreferenceList.removeIndex(oldIndex, false);
 									PreferenceList.incrementCurrentInProgressRank();
 								}
-								else if (oldIndex > currentInProgressIndex) // If they moved a character ranked lower than the character in progress when they paused it
-								{
-									PreferenceList.removeIndex(oldIndex, false);
-								}
-							}
-							else
-							{
-								// Just pop out the index and move on
-								PreferenceList.removeIndex(oldIndex, false);
 							}
 						}
 					}
@@ -928,29 +900,20 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 					{
 						if (characterIsNowInside)
 						{
+							PreferenceList.addIndex(newIndex);
+
 							if (currentInProgressIsInside)
 							{
 								if (newIndex <= currentInProgressIndex) // If they moved the character to a higher rank than the character in progress when they paused it
 								{
-									PreferenceList.addIndex(newIndex);
 									PreferenceList.decrementCurrentInProgressRank();
-								}
-								else if (newIndex > currentInProgressIndex) // If they moved the character to a lower rank than the character in progress when they paused it
-								{
-									PreferenceList.addIndex(newIndex);
 								}
 							}
 							else
 							{
-								// Add a new index to the indices array
-								PreferenceList.addIndex();
 								// moveToNext will handle the new indices array size
 								PreferenceList.moveToNext();
 							}
-						}
-						else if (characterIsNowOutside)
-						{
-							// Don't need to do anything
 						}
 					}
 				}
@@ -997,6 +960,48 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 					PreferenceList.removeIndex(deleteIndex, true);
 				}
 			}
+		},
+		
+		// To call from the console: console.log(angular.element(document.body).injector().get('Characters').getDebugInfo(false))
+		// This may not be 100% correct or easy to understand.
+		getDebugInfo: function (isRanking)
+		{
+			var arrayToUse = service.characters;
+			
+			if (isRanking)
+			{
+				arrayToUse = service._rankedCharacters;
+			}
+			
+			var indices = PreferenceList.indices;
+			var indicesTotal = indices.length;
+			var outputString = 'PreferenceList'
+				+ '\n\tsize: ' + PreferenceList.size
+				+ '\n\tcurrentIndex: ' + PreferenceList.currentIndex + ': ' + arrayToUse[PreferenceList.currentIndex].name + '\t\tLeft. This is the character being placed. Pause Note: This does not get updated until resume'
+				+ '\n\tmin: ' + PreferenceList.min + ': ' + arrayToUse[PreferenceList.indices[PreferenceList.min].index].name
+				+ '\n\tcenterIndex: ' + PreferenceList.centerIndex + ': ' + arrayToUse[PreferenceList.indices[PreferenceList.centerIndex].index].name + '\t\tRight.';
+				
+				if (PreferenceList.max < PreferenceList.indices.length)
+				{
+					outputString += '\n\tmax: ' + PreferenceList.max + ': ' + arrayToUse[PreferenceList.indices[PreferenceList.max].index].name;
+				}
+				else
+				{
+					outputString += '\n\tmax: ' + PreferenceList.max + ': ' + arrayToUse[PreferenceList.max].name;
+				}
+
+				outputString += '\n\tlastCompare: ' + PreferenceList.lastCompare + ': ' + arrayToUse[PreferenceList.indices[PreferenceList.lastCompare].index].name + '\t\tThis is the last character being compared against for resume purposes'
+				+ '\n\tindices:';
+			
+			for (var i = 0; i < indicesTotal; i++) {
+				var index = indices[i];
+
+				if (!index.skip) {
+					outputString += '\n\t\t' + i + ' (actual: ' + index.index + '): ' + arrayToUse[index.index].name;
+				}
+			}
+			
+			return outputString;
 		}
 	};
 	
