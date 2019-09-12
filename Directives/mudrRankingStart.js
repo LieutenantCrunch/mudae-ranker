@@ -19,7 +19,7 @@ mudaeRanker.directive('mudrRankingStart', ['Characters', 'Utilities', function(C
 						message: 'You have already ranked some characters, do you want to start over or resume ranking?',
 						title: 'Confirm Restart'
 					}).done(function (data, button) {
-						if (button == 'startOver')
+						if (button === 'startOver')
 						{
 							Characters.startRankMode();
 						}
