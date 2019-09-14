@@ -674,7 +674,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			var skippedCharacter = service._rankedCharacters.splice(service._currentRightIndex, 1).pop();
 			
 			skippedCharacter.skip = true; // If the checkbox was actually working properly, this wouldn't really be necessary, but oh well
-			service._discardedCharacters.push();
+			service._discardedCharacters.push(skippedCharacter);
 			PreferenceList.addAnswer(0);
 			service.presentCardsForComparison();
 		},
