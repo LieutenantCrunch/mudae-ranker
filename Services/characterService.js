@@ -417,17 +417,17 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 
 			if (total > 0)
 			{
-				var output = '$firstmarry ' + chars[0].originalName + '\n';
+				var output = '$firstmarry ' + chars[0].originalName;
 				
 				if (total > 1)
 				{
-					output += '$sortmarry pos ' + chars[0].originalName
+					output += '\n\n$sortmarry pos ' + chars[0].originalName
 
 					for (var i = 1; i < total; i++)
 					{
 						if (i % 20 === 0)
 						{
-							output += '\n$sortmarry pos ' + chars[i-1].originalName + '$' + chars[i].originalName;
+							output += '\n\n$sortmarry pos ' + chars[i-1].originalName + '$' + chars[i].originalName;
 						}
 						else
 						{
