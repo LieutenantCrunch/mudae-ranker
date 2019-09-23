@@ -8,7 +8,7 @@ Intended for use with the [Mudae bot for Discord](https://discordbots.org/bot/43
 
 This app will allow you to sort your harem based on a series of "x vs y" questions. You will be presented with two characters and asked which one you prefer. When you have completed answering all of the questions, your harem will be sorted based on your responses. It will then generate the commands you need to run in order to sort your harem on Discord
 
-This is something I threw together in my free time, I can't promise that it will be bug free or that every exception case will be handled. Please review the Issues section to see if there's any feature that's not working that you should be aware of.
+This is something I threw together in my free time, I can't promise that it will be bug free or that every exception case will be handled. Please review the Issues section to see if there's any feature that's not working that you should be aware of. This page is designed to work on your personal computer, simply download the project and open index.html in your browser.
 
 ## Basic Instructions
 This will walk you through importing your first batch of characters, sorting them, and then exporting the sort commands.
