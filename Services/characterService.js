@@ -130,8 +130,8 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 				return;
 			}
 
-			// Remove double newlines
-			var initialText = inputText.replace(/\n\n/g,'\n');
+			// Remove multiple newlines
+			var initialText = inputText.replace(/\n\n+/g,'\n');
 			
 			// Remove zero-width spaces
 			initialText = initialText.replace(/\u200b/g,'');
@@ -159,13 +159,22 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 				
 				for (var j = 0; j < charactersLength; j++)
 				{
+					var characterString = seriesData[j];
 					// Strip off any comments.
-					var originalName = seriesData[j].replace(/(?: \| .*)?/gi, '').trim();
+					var originalName = characterString.replace(/(?: \| .*)?/gi, '').trim();
+					var imageURLIndex = characterString.lastIndexOf('https:');
+					var characterImage = null;
+					
+					if (imageURLIndex > 0)
+					{
+						characterImage = characterString.substring(imageURLIndex).trim();
+					}
+					
 					var characterName = originalName.replace(/(?: \([A-Z]+\))?/gi, '').trim();
 					
 					var character = { 
 						className: 'CharacterThumb',
-						imageUrl: null, 
+						imageUrl: characterImage, 
 						minimizedName: Utilities.minimizeName(characterName),
 						name: characterName, 
 						originalName: originalName,
@@ -180,7 +189,10 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 						switch (mergeResults.code)
 						{
 						case MergeCode.NotFound:
-							lookupRequired = true;
+							if (imageURLIndex == -1)
+							{
+								lookupRequired = true;
+							}
 							break;
 						case MergeCode.Lookup:
 							lookupRequired = true;
@@ -194,7 +206,11 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 					else
 					{
 						service.addCharacter(character);
-						lookupRequired = true;
+						
+						if (imageURLIndex == -1)
+						{
+							lookupRequired = true;
+						}
 					}
 
 					if (lookupRequired) // If a character was added, then add it to the series array, we'll have to look it up from Anilist
@@ -234,6 +250,13 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 		fetchSeries: function (seriesArray)
 		{
 			var series = seriesArray.pop();
+
+			// If there's no series at this point, it's probably because the interval fired before it could be cancelled at the end of this function
+			if (!series)
+			{
+				return;
+			}
+
 			var queryVariables = {seriesName: series.name, pageNumber: series.page};
 			var queryBody = JSON.stringify({query: service.characterQuery, variables: queryVariables});
 
