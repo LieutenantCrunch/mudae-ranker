@@ -8,29 +8,31 @@ Intended for use with the [Mudae bot for Discord](https://discordbots.org/bot/43
 
 This app will allow you to sort your harem based on a series of "x vs y" questions. You will be presented with two characters and asked which one you prefer. When you have completed answering all of the questions, your harem will be sorted based on your responses. It will then generate the commands you need to run in order to sort your harem on Discord
 
-This is something I threw together in my free time, I can't promise that it will be bug free or that every exception case will be handled. Please review the Issues section to see if there's any feature that's not working that you should be aware of. This page is designed to work on your personal computer, simply download the project and open index.html in your browser.
+This is something I threw together in my free time, I can't promise that it will be bug free or that every exception case will be handled. Please review the Issues section to see if there's any feature that's not working that you should be aware of. 
+
+Note that this was implemented before the i- option was available, so if the instructions below reference Anilist a lot or in a seemingly strange why, that's why.
 
 ## Basic Instructions
-This will walk you through importing your first batch of characters, sorting them, and then exporting the sort commands.
-1. Run **$mmas** in Discord.
+This will walk you through importing your first batch of characters, sorting them, and then exporting the sort commands. To get started, simply download the project and open index.html in your browser.
+1. Run **$mmai-s** in Discord.
    - **_NOTE_**: You will be spammed with direct messages from your maid (or Mudae if you don't have a maid) for every character in your harem, so the larger your harem is, the more spam you'll get.
 2. Copy all of the series and character information from the direct message.
    - Do not copy the harem title or any other information.
    - Example:
      ```
      Tales of Zestiria - 1/12 
-     Edna
+     Edna - https://imgur.com/UAofYTG.jpg
      Re:Zero kara Hajimeru Isekai Seikatsu - 2/48 
-     Rem (RZ)
-        Ram | 🤷
+     Rem (RZ) - https://imgur.com/J7aspQh.gif.gif
+        Ram | 🤷 - https://imgur.com/P9UzNXd.jpg
      
      Captain Toad: Treasure Tracker - 1/1 
-        Captain Toad | Should be in Smash Bros
+        Captain Toad | Should be in Smash Bros - https://imgur.com/lLfBPIK.jpg
      ```
 3. Paste the copied information into the input field
 4. Click **Parse Input**
-   - At this point, you should see a bunch of thumbnails pop up and the images should start loading from the end
-   - All character images are initially looked up from [Anilist](https://anilist.co/), see the **Anilist** section below for some details related to character lookups.
+   - At this point, you should see a bunch of thumbnails pop up
+   - If you accidentally ran $mmas instead of $mmai-s, or if an image is not available for a character for some reason, the image should load afterward after being looked up from [Anilist](https://anilist.co/), see the **Anilist** section below for some details related to character lookups.
 5. Once the images are finished showing up, you can click on any thumbnail to view the full card for that character. See the **Character Card** section below for details on what is available on the card.
    - You can also drag individual characters around to resort them manually
 6. At any point, you can click **Export All Characters** to export a dump of the characters that can be re-imported later. This is highly recommended as it will save all of the image paths for each character, meaning the next time you import, it will not have to look the characters up from Anilist and will be much faster. I recommend saving the dump to a text file with Unicode encoding.
@@ -57,8 +59,8 @@ Full character cards have the following information and controls:
 ## Merging Instructions
 Claimed a bunch of characters and didn't keep your Mudae Ranker data up-to-date? Shame shame. But hey, that's what merging is for.
 1. Paste your previously saved data into the input field, then click **Parse Input**
-2. Run **$mmas** and copy the entire dump just like you did the first time you imported your harem
-3. All new characters will be added and looked up from Anilist
+2. Run **$mmai-s** and copy the entire dump just like you did the first time you imported your harem
+3. All new characters will be added and looked up from Anilist if necessary
    - As a bonus, characters that do not have their images set will also be looked up on Anilist on the off chance that something has changed and their images can be found now. It is actually possible for this to happen!
 4. At this point, you can export the characters, go through the process of ranking, or do whatever.
 
@@ -69,8 +71,8 @@ Sometimes you just want to add a single new character to your harem and don't fe
 3. Click the ✅ button when you're done to save the character, it will be added to the end of the list
 
 ## Anilist
-You may wonder why not all characters have images, why the images are different from what you see on Discord, or why it takes so long for all of the images to show up when you parse your $mmas dump the first time. This is because Mudae does not have an API, so all characters have to be looked up somewhere in order to get images for them. Fortunately, Anilist provides an API to request animanga characters and the images for them, and it seems as though some of Mudae's images were ripped from Anilist (or vice versa... but I doubt it), so it works well for populating the images. There are some limitations when using the Anilist API, so I'll explain those below and their effects on the Mudae Ranker app.
-- Anilist has a limit of 90 requests per minute. In v1.0 I limited the requests to 75 per minute just to be safe. This is one of the biggest slowdowns when it comes to populating the images the first time.
+Anilist is the fallback for character image lookups. It was necessary prior to the implementation of the i- option since there was no way to get the images for each character. Most images from Anilist are the same size as the images from Mudae, so they work well for the purpose of this app. There are some limitations when using the Anilist API, so I'll explain those below and their effects on the Mudae Ranker app.
+- Anilist has a limit of 90 requests per minute. I limited the requests to 75 per minute just to be safe. This is one of the biggest slowdowns when it comes to populating the images from Anilist.
 - Requests to Anilist are done by series, and up to 25 characters will be brought back for a series in one request. It's not guaranteed that all characters you own for a series will come back in the first request, so sometimes you need to make additional requests to pull back additional characters for a series.
 - Anilist's query functionality can be really strange, so it may not return results for all series. Sometimes, even if a series is on Anilist, the top result when searching for that series name will be something completely different, in which case the character's images won't be populated.
 - Anilist breaks down series a bit differently from Mudae. For example, Mudae lists Sinon as being from "Sword Art Online", but Anilist lists her as being from "Sword Art Online II", so her image lookup fails.
@@ -79,6 +81,7 @@ You may wonder why not all characters have images, why the images are different 
 
 ## Important Notes
 - Make sure you don't save your exports with ANSI encoding, it's entirely possible they could have special characters that will get lost if you save with the wrong encoding, and that would cause bad things.
+- If you have your harem sorted before you go into this app and you're worried about something getting messed up, I recommend importing from $mmas and then immediately using the Export All Characters button to get your save dump followed by the Generate Sort Commands button to get your sort commands.
 - Stopping ranking midway triggers the most complicated state of this app. If any bugs are going to show up, this is where I expect them to show. If you like to read (there will be no tl;dr), here's an attempted explanation of what's going on behind the scenes and what you can expect:
   - You can think of your characters as being split up into two different lists, the ranked characters and the unranked characters.
   - Ranked characters ones that you specifically made a decision on by clicking on them in the ranking popup, whereas unranked are all the rest
@@ -90,4 +93,3 @@ You may wonder why not all characters have images, why the images are different 
   - If you drag and drop the in-progress character within the ranked characters, the app will accept your decision as deliberate and will move on to the next character once you resume ranking.
   - If you move an unranked character into the ranked characters, it will become a ranked character, the app will accept your decision as deliberate and will either continue with the in-progress character or will grab the next character for ranking once you resume ranking.
   - If you move a ranked character into the unranked characters, it will become an unranked character and you will be shown that character again later on.
-- If you have your harem sorted before you go into this app and you're worried about something getting messed up, I recommend importing from $mmas and then immediately using the Export All Characters button to get your save dump followed by the Generate Sort Commands button to get your sort commands.
