@@ -160,14 +160,14 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 				for (var j = 0; j < charactersLength; j++)
 				{
 					var characterString = seriesData[j];
-					// Strip off any comments.
-					var originalName = characterString.replace(/(?: \| .*)?/gi, '').trim();
-					var imageURLIndex = characterString.lastIndexOf('https:');
+					// Strip off the image url and any comments
+					var originalName = characterString.replace(/ - https:.*/i, '').replace(/(?: \| .*)?/gi, '').trim();
+					var imageURLIndex = characterString.lastIndexOf(' - https:');
 					var characterImage = null;
 					
 					if (imageURLIndex > 0)
 					{
-						characterImage = characterString.substring(imageURLIndex).trim();
+						characterImage = characterString.substring(imageURLIndex + 3).trim();
 					}
 					
 					var characterName = originalName.replace(/(?: \([A-Z]+\))?/gi, '').trim();
