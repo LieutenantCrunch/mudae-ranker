@@ -141,7 +141,7 @@ mudaeRanker.service('Characters', ['$http', '$interval', '$rootScope', 'MergeCod
 			initialText = initialText.replace(/Muda(e|maid \d+)BOTToday at ([1-9]|1[12]):([0-5][0-9]) [AP]M/gi, '');
 
 			// Clear the character counts on series and put a '$' before the series name for splitting
-			initialText = initialText.replace(/(.*) - \d+\/\d+/g, '$$$1');
+			initialText = initialText.replace(/(.*) (- | +)\d+\/\d+/g, '$$$1');
 			
 			// Remove the first object in the array since it's an empty string
 			var initialSeriesArray = initialText.split('$').slice(1);
