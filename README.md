@@ -1,12 +1,12 @@
 # Mudae Ranker
- Preference-based Mudae harem ranking app
+ Preference-based Mudae collection ranking app
 
 ## Summary
 Original concept by: [DarkMage530](https://github.com/jonmervine)
 
 Intended for use with the [Mudae bot for Discord](https://discordbots.org/bot/432610292342587392)
 
-This app will allow you to sort your harem based on a series of "x vs y" questions. You will be presented with two characters and asked which one you prefer. When you have completed answering all of the questions, your harem will be sorted based on your responses. It will then generate the commands you need to run in order to sort your harem on Discord
+This app will allow you to sort your collection based on a series of "x vs y" questions. You will be presented with two characters and asked which one you prefer. When you have completed answering all of the questions, your collection will be sorted based on your responses. It will then generate the commands you need to run in order to sort your collection on Discord
 
 This is something I threw together in my free time, I can't promise that it will be bug free or that every exception case will be handled. Please review the Issues section to see if there's any feature that's not working that you should be aware of. 
 
@@ -15,9 +15,9 @@ Note that this was implemented before the i- option was available, so if the ins
 ## Basic Instructions
 This will walk you through importing your first batch of characters, sorting them, and then exporting the sort commands. To get started, simply download the project and open index.html in your browser.
 1. Run **$mmai-s** in Discord.
-   - **_NOTE_**: You will be spammed with direct messages from your maid (or Mudae if you don't have a maid) for every character in your harem, so the larger your harem is, the more spam you'll get.
+   - **_NOTE_**: You will be spammed with direct messages from your maid (or Mudae if you don't have a maid) for every character in your collection, so the larger your collection is, the more spam you'll get.
 2. Copy all of the series and character information from the direct message.
-   - Do not copy the harem title or any other information.
+   - Do not copy the collection title or any other information.
    - Example:
      ```
      Tales of Zestiria - 1/12 
@@ -40,9 +40,9 @@ This will walk you through importing your first batch of characters, sorting the
 8. The ranking pop up will show you two characters. Click on the one that you prefer.
    - Note that you can also click the "Skip" button for a character, this will remove the character from the ranking process and throw them at the end of the list. If you want to bring them back, you will have to stop ranking and turn skip back off for them (see **Character Card**)
    - To stop ranking midway, simply click the ❎ in the popup. The **Resume Ranking** button will enable, allowing you to pick back up from where you left off (see **Important Notes** below).
-9. After you have ranked all characters, the popup will go away and your harem should now be sorted based on your preferences.
+9. After you have ranked all characters, the popup will go away and your collection should now be sorted based on your preferences.
    - It's highly recommended that you click **Export All Characters** at this point so you can import them in the same order they're in now that you've sorted them.
-10. Now you can click **Generate Sort Commands** and the list of commands you need to run to sort your harem on Discord will be shown.
+10. Now you can click **Generate Sort Commands** and the list of commands you need to run to sort your collection on Discord will be shown.
 
 ## Character Card
 Full character cards have the following information and controls:
@@ -59,13 +59,13 @@ Full character cards have the following information and controls:
 ## Merging Instructions
 Claimed a bunch of characters and didn't keep your Mudae Ranker data up-to-date? Shame shame. But hey, that's what merging is for.
 1. Paste your previously saved data into the input field, then click **Parse Input**
-2. Run **$mmai-s** and copy the entire dump just like you did the first time you imported your harem
+2. Run **$mmai-s** and copy the entire dump just like you did the first time you imported your collection
 3. All new characters will be added and looked up from Anilist if necessary
    - As a bonus, characters that do not have their images set will also be looked up on Anilist on the off chance that something has changed and their images can be found now. It is actually possible for this to happen!
 4. At this point, you can export the characters, go through the process of ranking, or do whatever.
 
 ## Adding New Characters
-Sometimes you just want to add a single new character to your harem and don't feel like using the merge functionality. That's what the 🆕 button is for!
+Sometimes you just want to add a single new character to your collection and don't feel like using the merge functionality. That's what the 🆕 button is for!
 1. Click the 🆕 button, a popup will display with fields for you to fill out
 2. Fill out the details, copying them from Mudae as they'd show up if you used the **$im** command on the character
 3. Click the ✅ button when you're done to save the character, it will be added to the end of the list
@@ -81,7 +81,7 @@ Anilist is the fallback for character image lookups. It was necessary prior to t
 
 ## Important Notes
 - Make sure you don't save your exports with ANSI encoding, it's entirely possible they could have special characters that will get lost if you save with the wrong encoding, and that would cause bad things.
-- If you have your harem sorted before you go into this app and you're worried about something getting messed up, I recommend importing from $mmas and then immediately using the Export All Characters button to get your save dump followed by the Generate Sort Commands button to get your sort commands.
+- If you have your collection sorted before you go into this app and you're worried about something getting messed up, I recommend importing from $mmas and then immediately using the Export All Characters button to get your save dump followed by the Generate Sort Commands button to get your sort commands.
 - Stopping ranking midway triggers the most complicated state of this app. If any bugs are going to show up, this is where I expect them to show. If you like to read (there will be no tl;dr), here's an attempted explanation of what's going on behind the scenes and what you can expect:
   - You can think of your characters as being split up into two different lists, the ranked characters and the unranked characters.
   - Ranked characters ones that you specifically made a decision on by clicking on them in the ranking popup, whereas unranked are all the rest
